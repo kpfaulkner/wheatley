@@ -14,7 +14,7 @@ func getMessageHandlers() []interface{} {
   ah := messagehandlers.NewAzureStatusMessageHandler()
   dbh := messagehandlers.NewDatabaseBackupMessageHandler()
 
-	handlerArray := []messagehandlers.MessageHandler{misc, sh, ah, ash, dbh}
+	handlerArray := []messagehandlers.MessageHandler{misc, sh, ah, dbh}
 	handlers := make([]interface{}, len(handlerArray))
 	for i, h := range handlerArray {
 		handlers[i] = h
