@@ -1,0 +1,12 @@
+{
+  "SubscriptionID": "",
+  "TenantID": "",
+  "ClientID": "",
+  "ClientSecret": "",
+  "ResourceGroup": "",
+  "StorageKey": "",
+  "StorageURL": "",
+  "SqlAdminLogin": "",
+  "SqlAdminPassword":"",
+  "AllowedUsers": ""
+}

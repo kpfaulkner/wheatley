@@ -1,0 +1,138 @@
+{
+  "AzureMonitor":
+    [
+      {
+        "Name": "test",
+        "SubscriptionID": "",
+        "TenantID": "",
+        "ClientID": "",
+        "ClientSecret": "",
+        "ResourceToMonitor": [
+          {
+            "Name": "Redis",
+            "ResourceGroup": "",
+            "ResourceName": "",
+            "MetricDefinition": "Microsoft.Cache/Redis",
+            "Metrics": [
+              "serverLoad",
+              "percentProcessorTime",
+              "usedmemory"
+            ]
+          },
+          {
+            "Name": "DB",
+            "ResourceGroup": "",
+            "ResourceName": "",
+            "MetricDefinition": "Microsoft.Sql/servers",
+            "Metrics": [
+              "cpu_percent",
+              "dtu_consumption_percent"
+            ]
+          },
+          {
+            "Name": "DB Read",
+            "ResourceGroup": "",
+            "ResourceName": "",
+            "MetricDefinition": "Microsoft.Sql/servers",
+            "Metrics": [
+              "cpu_percent",
+              "dtu_consumption_percent"
+            ]
+          },
+          {
+            "Name": "ES VM",
+            "ResourceGroup": "",
+            "ResourceName": "",
+            "MetricDefinition": "Microsoft.Compute/virtualMachines",
+            "Metrics": [
+              "Percentage CPU"
+            ]
+          }
+        ]
+      },
+      {
+        "Name": "prod",
+        "SubscriptionID": "",
+        "TenantID": "",
+        "ClientID": "",
+        "ClientSecret": "",
+        "ResourceToMonitor": [
+          {
+            "Name": "Redis",
+            "ResourceGroup": ",
+            "ResourceName": "",
+            "MetricDefinition": "Microsoft.Cache/Redis",
+            "Metrics": [
+              "serverLoad",
+              "percentProcessorTime",
+              "usedmemory"
+            ]
+          },
+          {
+            "Name": "DB",
+            "ResourceGroup": "",
+            "ResourceName": "",
+            "MetricDefinition": "Microsoft.Sql/servers",
+            "Metrics": [
+              "cpu_percent",
+              "dtu_consumption_percent"
+            ]
+          },
+          {
+            "Name": "DB Read",
+            "ResourceGroup": "",
+            "ResourceName": "",
+            "MetricDefinition": "Microsoft.Sql/servers",
+            "Metrics": [
+              "cpu_percent",
+              "dtu_consumption_percent"
+            ]
+          },
+          {
+            "Name": "ES VM1",
+            "ResourceGroup": "",
+            "ResourceName": "",
+            "MetricDefinition": "Microsoft.Compute/virtualMachines",
+            "Metrics": [
+              "Percentage CPU"
+            ]
+          },
+          {
+            "Name": "ES VM2",
+            "ResourceGroup": "",
+            "ResourceName": "",
+            "MetricDefinition": "Microsoft.Compute/virtualMachines",
+            "Metrics": [
+              "Percentage CPU"
+            ]
+          },
+          {
+            "Name": "ES VM3",
+            "ResourceGroup": "",
+            "ResourceName": "",
+            "MetricDefinition": "Microsoft.Compute/virtualMachines",
+            "Metrics": [
+              "Percentage CPU"
+            ]
+          }
+        ]
+      }
+    ]
+  ,
+  "AppInsights":
+  {
+    "Configs":[
+      {"env":"test",
+        "resources":[
+        { "Name":"","AppID": "", "APIKey": ""},
+        { "Name":"","AppID": "", "APIKey": ""}
+      ]},
+      {"env":"prod",
+      "resources":[
+        { "Name":"","AppID": "", "APIKey": ""},
+        { "Name":"","AppID": "", "APIKey": ""}
+      ]
+      }
+      ]
+  }
+}
