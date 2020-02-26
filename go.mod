@@ -10,5 +10,6 @@ require (
 	github.com/nlopes/slack v0.6.0
 	github.com/sendgrid/rest v2.4.1+incompatible // indirect
 	github.com/sendgrid/sendgrid-go v3.5.0+incompatible
+	github.com/slack-go/slack v0.6.2
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 )
