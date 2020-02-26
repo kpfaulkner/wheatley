@@ -27,7 +27,6 @@ func main() {
 	handlers := getMessageHandlers()
 
 	slackKey := os.Getenv("SLACK_KEY")
-	slackKey = "xoxb-6737872145-dN2E88nyrAWoot486wQmqBZD"
 	api := slack.New(slackKey)
 	logger := log.New(os.Stdout, "slack-bot: ", log.Lshortfile|log.LstdFlags)
 	slack.OptionLog(logger)
