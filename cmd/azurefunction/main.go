@@ -16,7 +16,7 @@ type SlackServer struct {
 	slackApi *slack.Client
 	token string
 	verificationToken string
-	handlers []interface{}
+	handlers [] messagehandlers.MessageHandler
 }
 
 func NewSlackServer(token string, verificationToken string) SlackServer {
@@ -56,10 +56,7 @@ func (s *SlackServer) slackHttp( w http.ResponseWriter, r *http.Request) {
 	if eventsAPIEvent.Type == slackevents.CallbackEvent {
 		innerEvent := eventsAPIEvent.InnerEvent
 
-
-		//w.WriteHeader(http.StatusInternalServerError)
 		switch ev := innerEvent.Data.(type) {
-
 		case *slackevents.MessageEvent:
 
 			// return 200 immediately... according to https://api.slack.com/events-api#prepare
@@ -69,8 +66,8 @@ func (s *SlackServer) slackHttp( w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 
 			// loop through all handlers and reply.
-			for _, handlerInterface := range s.handlers {
-				handler, _ := handlerInterface.(messagehandlers.MessageHandler)
+			for _, handler := range s.handlers {
+				//handler, _ := handlerInterface.(messagehandlers.MessageHandler)
 
 				// not a GO channel... but just using slack-go terminology
 				go func(text string, user string, channelID string, h messagehandlers.MessageHandler) {
@@ -101,17 +98,13 @@ func (s *SlackServer) run() {
 	log.Fatal(http.ListenAndServe(":"+port,nil))
 }
 
-func azureFunctionGetMessageHandlers() []interface{} {
+func azureFunctionGetMessageHandlers() []messagehandlers.MessageHandler {
 	misc := messagehandlers.NewMiscMessageHandler()
-	//sh := messagehandlers.NewServerStatusMessageHandler()
-	//ah := messagehandlers.NewAzureStatusMessageHandler()
-	//dbh := messagehandlers.NewDatabaseBackupMessageHandler()
+	sh := messagehandlers.NewServerStatusMessageHandler()
+	ah := messagehandlers.NewAzureStatusMessageHandler()
+	dbh := messagehandlers.NewDatabaseBackupMessageHandler()
 
-	handlerArray := []messagehandlers.MessageHandler{misc}
-	handlers := make([]interface{}, len(handlerArray))
-	for i, h := range handlerArray {
-		handlers[i] = h
-	}
+	handlers := []messagehandlers.MessageHandler{misc, sh, ah, dbh}
 	return handlers
 }
 

@@ -7,18 +7,13 @@ import (
 	"os"
 )
 
-// when we want to add a new handler. Add it to the slice here... then all is fine!
-func getMessageHandlers() []interface{} {
-  misc := messagehandlers.NewMiscMessageHandler()
-  sh := messagehandlers.NewServerStatusMessageHandler()
-  ah := messagehandlers.NewAzureStatusMessageHandler()
-  dbh := messagehandlers.NewDatabaseBackupMessageHandler()
+func getMessageHandlers() []messagehandlers.MessageHandler {
+	misc := messagehandlers.NewMiscMessageHandler()
+	sh := messagehandlers.NewServerStatusMessageHandler()
+	ah := messagehandlers.NewAzureStatusMessageHandler()
+	dbh := messagehandlers.NewDatabaseBackupMessageHandler()
 
-	handlerArray := []messagehandlers.MessageHandler{misc, sh, ah, dbh}
-	handlers := make([]interface{}, len(handlerArray))
-	for i, h := range handlerArray {
-		handlers[i] = h
-	}
+	handlers := []messagehandlers.MessageHandler{misc, sh, ah, dbh}
 	return handlers
 }
 
@@ -39,8 +34,7 @@ func main() {
 
 		case *slack.MessageEvent:
 
-			for _, handlerInterface := range handlers {
-				handler, _ := handlerInterface.(messagehandlers.MessageHandler)
+			for _, handler := range handlers {
 				go func(text string, user string, grRtm *slack.RTM, h messagehandlers.MessageHandler) {
 					u, err := api.GetUserInfo(user)
 					if err != nil {
