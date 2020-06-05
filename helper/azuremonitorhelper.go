@@ -67,7 +67,7 @@ func generateAzureAuthMap(config AzureMonitoringConfigMap ) (map[string]*AzureAu
 
 	aam := make(map[string]*AzureAuth)
 	for k,v := range config.AzureMonitorMap {
-    auth := NewAzureAuth( v.SubscriptionID, v.TenantID, v.ClientID, v.ClientSecret)
+    auth := NewAzureAuth(v.TenantID, v.ClientID, v.ClientSecret)
     aam[k] = auth
 	}
 

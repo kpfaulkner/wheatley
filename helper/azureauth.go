@@ -23,7 +23,6 @@ type AzureAuthToken struct {
 }
 
 type AzureAuth struct {
-	subscriptionID string
 	tenantID string
 	clientID string
 	clientSecret string
@@ -32,9 +31,8 @@ type AzureAuth struct {
 	currentToken AzureAuthToken
 }
 
-func NewAzureAuth( subscriptionID string, tenantID string, clientID string, clientSecret string) *AzureAuth {
+func NewAzureAuth(tenantID string, clientID string, clientSecret string) *AzureAuth {
 	aa := AzureAuth{}
-	aa.subscriptionID = subscriptionID
 	aa.tenantID = tenantID
 	aa.clientSecret = clientSecret
 	aa.clientID = clientID
@@ -55,7 +53,7 @@ func (aa *AzureAuth) RefreshToken() error {
   }
 
   if aa.currentToken.AccessToken == "" || aa.currentToken.ExpiresOnTime.UTC().Before(time.Now().UTC()) {
-	  token, err := generateAuthHeader( aa.subscriptionID, aa.tenantID, aa.clientID, aa.clientSecret)
+	  token, err := generateAuthHeader(aa.tenantID, aa.clientID, aa.clientSecret)
   	if err != nil {
   		fmt.Printf("error while generating auth token! %s\n", err.Error())
   		return err
@@ -68,7 +66,7 @@ func (aa *AzureAuth) RefreshToken() error {
 
 // see http://devchat.live/en/2017/02/27/access-metrics-using-azure-monitor-rest-api/
 // URL is https://login.microsoftonline.com/<tenantID>/oauth2/token
-func generateAuthHeader(subscriptionID string, tenantID string, clientID string, clientSecret string) (*AzureAuthToken, error) {
+func generateAuthHeader(tenantID string, clientID string, clientSecret string) (*AzureAuthToken, error) {
 	urlTemplate := "https://login.microsoftonline.com/%s/oauth2/token"
 	bodyTemplate := "grant_type=client_credentials&resource=https://management.core.windows.net/&client_id=%s&client_secret=%s"
 	url := fmt.Sprintf(urlTemplate, tenantID)

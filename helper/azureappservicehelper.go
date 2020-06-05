@@ -27,7 +27,7 @@ type AzureAppServiceHelper struct {
 
 func NewAzureAppServiceHelper(subscriptionID string, tenantID string, clientID string, clientSecret string ) *AzureAppServiceHelper {
 	ah := AzureAppServiceHelper{}
-	ah.azureAuth = NewAzureAuth(subscriptionID, tenantID, clientID, clientSecret)
+	ah.azureAuth = NewAzureAuth(tenantID, clientID, clientSecret)
 	ah.subscriptionID = subscriptionID
 	ah.tenantID = tenantID
 	ah.clientID = clientID

@@ -12,8 +12,9 @@ func getMessageHandlers() []messagehandlers.MessageHandler {
 	sh := messagehandlers.NewServerStatusMessageHandler()
 	ah := messagehandlers.NewAzureStatusMessageHandler()
 	dbh := messagehandlers.NewDatabaseBackupMessageHandler()
+	ach := messagehandlers.NewAzureCostMessageHandler()
 
-	handlers := []messagehandlers.MessageHandler{misc, sh, ah, dbh}
+	handlers := []messagehandlers.MessageHandler{misc, sh, ah, dbh, ach}
 	return handlers
 }
 
