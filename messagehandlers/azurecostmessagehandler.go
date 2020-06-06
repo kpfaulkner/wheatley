@@ -4,34 +4,33 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/kpfaulkner/wheatley/helper"
 	"log"
 	"os"
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/kpfaulkner/wheatley/helper"
 )
 
 type AzureCostsConfig struct {
-	SubscriptionID string   `json:"SubscriptionID"`
-	TenantID       string   `json:"TenantID"`
-	ClientID       string   `json:"ClientID"`
-	ClientSecret   string   `json:"ClientSecret"`
-	Subscriptions  []string
+	SubscriptionID   string `json:"SubscriptionID"`
+	TenantID         string `json:"TenantID"`
+	ClientID         string `json:"ClientID"`
+	ClientSecret     string `json:"ClientSecret"`
+	Subscriptions    []string
 	AllowedUsersList []string
-
 }
-
 
 // AzureCostMessageHandler gets the costs from Azure Billing API.
 type AzureCostsMessageHandler struct {
-  config *AzureCostsConfig
+	config *AzureCostsConfig
 }
 
 func NewAzureCostMessageHandler() *AzureCostsMessageHandler {
 	asHandler := AzureCostsMessageHandler{}
 
-	config,err := loadAzureCostsConfig( "azurecosts.json")
+	config, err := loadAzureCostsConfig("azurecosts.json")
 	if err != nil {
 		log.Fatalf("Cannot read azure costs config :  %s\n", err.Error())
 	}
@@ -40,7 +39,6 @@ func NewAzureCostMessageHandler() *AzureCostsMessageHandler {
 
 	return &asHandler
 }
-
 
 func loadAzureCostsConfig(configFileName string) (*AzureCostsConfig, error) {
 	var config AzureCostsConfig
@@ -60,7 +58,7 @@ func loadAzureCostsConfig(configFileName string) (*AzureCostsConfig, error) {
 func (ss *AzureCostsMessageHandler) ParseMessage(msg string, user string) (string, error) {
 
 	reportAzureCostsRegex := regexp.MustCompile(`^report azurecosts from (.*) to (.*)$`)
-	reportAzureCostsForRGRegex := regexp.MustCompile(`^report azurecosts from (.*) to (.*) with prefix (.*)$`)
+	reportAzureCostsForRGRegex := regexp.MustCompile(`^report azurecosts with prefix (.*) from (.*) to (.*) $`)
 	soundOffRegex := regexp.MustCompile(`sound off`)
 	helpRegex := regexp.MustCompile(`^help$`)
 
@@ -84,7 +82,7 @@ func (ss *AzureCostsMessageHandler) ParseMessage(msg string, user string) (strin
 			}
 
 			ac := helper.NewAzureCost(ss.config.TenantID, ss.config.ClientID, ss.config.ClientSecret)
-			subCosts,err  := ac.GenerateSubscriptionCostDetails(ss.config.Subscriptions, startDate, endDate)
+			subCosts, err := ac.GenerateSubscriptionCostDetails(ss.config.Subscriptions, startDate, endDate)
 			if err != nil {
 				fmt.Printf("Error generating sub costs %s\n", err.Error())
 				return "Unable to generate subscription costs.", nil
@@ -92,12 +90,12 @@ func (ss *AzureCostsMessageHandler) ParseMessage(msg string, user string) (strin
 
 			subTotals := []string{}
 			total := 0.0
-			for _,sc := range subCosts {
-				subTotals = append(subTotals, fmt.Sprintf("Total of sub %s is %0.2f",sc.SubscriptionID,sc.Total))
+			for _, sc := range subCosts {
+				subTotals = append(subTotals, fmt.Sprintf("Total of sub %s is %0.2f", sc.SubscriptionID, sc.Total))
 				total += sc.Total
 			}
 			subTotals = append(subTotals, fmt.Sprintf("TOTAL is %0.2f", total))
-			return strings.Join(subTotals,"\n" ), nil
+			return strings.Join(subTotals, "\n"), nil
 		}
 
 		return "Please check your query... if you think it's right... complain to Ken.", nil
@@ -105,9 +103,9 @@ func (ss *AzureCostsMessageHandler) ParseMessage(msg string, user string) (strin
 	case reportAzureCostsForRGRegex.MatchString(msg):
 		res := reportAzureCostsForRGRegex.FindStringSubmatch(msg)
 		if res != nil && len(res) == 4 {
-			startDateStr := strings.ToLower(res[1])
-			endDateStr := strings.ToLower(res[2])
-			prefix := strings.ToLower(res[3])
+			startDateStr := strings.ToLower(res[2])
+			endDateStr := strings.ToLower(res[3])
+			prefix := strings.ToLower(res[1])
 
 			layout := "2006-01-02"
 			startDate, err := time.Parse(layout, startDateStr)
@@ -120,7 +118,7 @@ func (ss *AzureCostsMessageHandler) ParseMessage(msg string, user string) (strin
 			}
 
 			ac := helper.NewAzureCost(ss.config.TenantID, ss.config.ClientID, ss.config.ClientSecret)
-			subCosts,err  := ac.GenerateSubscriptionCostDetails(ss.config.Subscriptions, startDate, endDate)
+			subCosts, err := ac.GenerateSubscriptionCostDetails(ss.config.Subscriptions, startDate, endDate)
 			if err != nil {
 				fmt.Printf("Error generating sub costs %s\n", err.Error())
 				return "Unable to generate subscription costs.", nil
@@ -128,23 +126,23 @@ func (ss *AzureCostsMessageHandler) ParseMessage(msg string, user string) (strin
 
 			subTotals := []string{}
 			total := 0.0
-			for _,sc := range subCosts {
-				subTotals = append(subTotals, fmt.Sprintf("Total of sub %s is %0.2f",sc.SubscriptionID,sc.Total))
+			for _, sc := range subCosts {
+				subTotals = append(subTotals, fmt.Sprintf("Total of sub %s is %0.2f", sc.SubscriptionID, sc.Total))
 				total += sc.Total
 			}
 
 			// just prefix data
-			prefixCosts, err  := helper.GetCostsPerRGPrefix([]string{prefix}, subCosts)
+			prefixCosts, err := helper.GetCostsPerRGPrefix([]string{prefix}, subCosts)
 			if err != nil {
 				return "Unable to get costs for prefix", nil
 			}
 
-			for prefix,cost := range prefixCosts {
+			for prefix, cost := range prefixCosts {
 				subTotals = append(subTotals, fmt.Sprintf("Prefix %s cost %0.2f", prefix, cost))
 			}
 
 			subTotals = append(subTotals, fmt.Sprintf("TOTAL is %0.2f", total))
-			return strings.Join(subTotals,"\n" ), nil
+			return strings.Join(subTotals, "\n"), nil
 		}
 	case soundOffRegex.MatchString(msg):
 		return "AzureCostsMessageHandler reporting for duty", nil
