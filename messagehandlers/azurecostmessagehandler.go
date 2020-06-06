@@ -58,7 +58,7 @@ func loadAzureCostsConfig(configFileName string) (*AzureCostsConfig, error) {
 func (ss *AzureCostsMessageHandler) ParseMessage(msg string, user string) (string, error) {
 
 	reportAzureCostsRegex := regexp.MustCompile(`^report azurecosts from (.*) to (.*)$`)
-	reportAzureCostsForRGRegex := regexp.MustCompile(`^report azurecosts with prefix (.*) from (.*) to (.*) $`)
+	reportAzureCostsForRGRegex := regexp.MustCompile(`^report azurecosts with prefix (.*) from (.*) to (.*)$`)
 	soundOffRegex := regexp.MustCompile(`sound off`)
 	helpRegex := regexp.MustCompile(`^help$`)
 
