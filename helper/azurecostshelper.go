@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -155,23 +156,39 @@ func (ac *AzureCost) GenerateSubscriptionCostDetails( subscriptionIDs []string, 
 
 	subscriptionCosts := []SubscriptionCosts{}
 
+	// for this simple case, just lock it.
+  var lock sync.Mutex
+  var wg sync.WaitGroup
+
 	for _, subscriptionID := range subscriptionIDs {
-		data, err := ac.GetAllBillingForSubscriptionID(subscriptionID, startDate, endDate)
-		if err != nil {
-			return nil, err
-		}
+		sId := subscriptionID
+		start := startDate
+		end := endDate
+		wg.Add(1)
+		go func( subID string, startDate time.Time, endDate time.Time) {
+			data, err := ac.GetAllBillingForSubscriptionID(subscriptionID, startDate, endDate)
+			if err != nil {
+				return
+			}
 
-		rgData, total, err := CalculateCostsPerResourceGroup(data)
-		if err != nil {
-			return nil, err
-		}
+			rgData, total, err := CalculateCostsPerResourceGroup(data)
+			if err != nil {
+				return
+			}
 
-		// merge results into subscriptionCosts.
-		sc := NewSubscriptionCosts(subscriptionID)
-		sc.ResourceGroupCosts = rgData
-		sc.Total = total
-		subscriptionCosts = append(subscriptionCosts, sc)
+			// merge results into subscriptionCosts.
+			sc := NewSubscriptionCosts(subscriptionID)
+			sc.ResourceGroupCosts = rgData
+			sc.Total = total
+
+			lock.Lock()
+			subscriptionCosts = append(subscriptionCosts, sc)
+			lock.Unlock()
+			wg.Done()
+		}( sId, start, end)
 	}
+
+	wg.Wait()
 
 	return subscriptionCosts, nil
 }
