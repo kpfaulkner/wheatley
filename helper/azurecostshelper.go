@@ -165,8 +165,8 @@ func (ac *AzureCost) GenerateSubscriptionCostDetails( subscriptionIDs []string, 
 		start := startDate
 		end := endDate
 		wg.Add(1)
-		go func( subID string, startDate time.Time, endDate time.Time) {
-			data, err := ac.GetAllBillingForSubscriptionID(subscriptionID, startDate, endDate)
+		go func( subID string, sDate time.Time, eDate time.Time) {
+			data, err := ac.GetAllBillingForSubscriptionID(subID, sDate, eDate)
 			if err != nil {
 				return
 			}
@@ -177,7 +177,7 @@ func (ac *AzureCost) GenerateSubscriptionCostDetails( subscriptionIDs []string, 
 			}
 
 			// merge results into subscriptionCosts.
-			sc := NewSubscriptionCosts(subscriptionID)
+			sc := NewSubscriptionCosts(subID)
 			sc.ResourceGroupCosts = rgData
 			sc.Total = total
 
