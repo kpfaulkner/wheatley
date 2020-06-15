@@ -194,6 +194,31 @@ func (ac *AzureCost) GenerateSubscriptionCostDetails( subscriptionIDs []string, 
 	return subscriptionCosts, nil
 }
 
+func (ac *AzureCost) GenerateSubscriptionCostDetailsSequential( subscriptionIDs []string, startDate time.Time, endDate time.Time) ([]SubscriptionCosts, error) {
+
+	subscriptionCosts := []SubscriptionCosts{}
+
+	for _, subscriptionID := range subscriptionIDs {
+		data, err := ac.GetAllBillingForSubscriptionID(subscriptionID, startDate, endDate)
+		if err != nil {
+			return nil, err
+		}
+
+		rgData, total, err := CalculateCostsPerResourceGroup(data)
+		if err != nil {
+			return nil, err
+		}
+
+		// merge results into subscriptionCosts.
+		sc := NewSubscriptionCosts(subscriptionID)
+		sc.ResourceGroupCosts = rgData
+		sc.Total = total
+		subscriptionCosts = append(subscriptionCosts, sc)
+	}
+
+	return subscriptionCosts, nil
+}
+
 // getCostsPerPrefix takes costs that have already been retrieved and give summaries where
 // particular prefixes are met.
 // ie, will search for RG prefixes of "test-" for the testenv etc.
