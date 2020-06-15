@@ -102,7 +102,8 @@ func (ac *AzureCost) GetAllBillingForSubscriptionID( subscriptionID string, star
 			return nil, err
 		}
 
-		client := http.Client{ Timeout: 120 * time.Second}
+		// yes, 5 minute timeout....   getting costs can really take a while :/
+		client := http.Client{ Timeout: 300 * time.Second}
 		request.Header.Set("Authorization", "Bearer "+ac.azureAuth.CurrentToken().AccessToken)
 		resp, err := client.Do(request)
 		if err != nil {
