@@ -47,9 +47,9 @@ func (gh *GithubHelper) GetPR(prID int) ( *github.PullRequest, error) {
 	return pr, nil
 }
 
-func (gh *GithubHelper) GetIssueState(issueID int) (string, error) {
+func (gh *GithubHelper) GetIssueState(repo string, issueID int) (string, error) {
 
-	issue, err := gh.GetIssue(issueID)
+	issue, err := gh.GetIssue(repo, issueID)
 	if err != nil {
 		return "", err
 	}
@@ -57,8 +57,8 @@ func (gh *GithubHelper) GetIssueState(issueID int) (string, error) {
 	return issue.GetState(), nil
 }
 
-func (gh *GithubHelper) GetIssue(issueID int) (*github.Issue, error) {
-	issue, _, err := gh.client.Issues.Get(gh.ctx, gh.owner, gh.repo, issueID)
+func (gh *GithubHelper) GetIssue(repo string, issueID int) (*github.Issue, error) {
+	issue, _, err := gh.client.Issues.Get(gh.ctx, gh.owner, repo, issueID)
 	if err != nil {
 		fmt.Printf("error %s\n", err.Error())
 		return nil, err
@@ -107,8 +107,8 @@ func (gh *GithubHelper) AddLabelToPR(prID int, label string) error {
   return nil
 }
 
-func (gh *GithubHelper) AddLabelToIssue(issueID int, label string) error {
-	issue, err := gh.GetIssue(issueID)
+func (gh *GithubHelper) AddLabelToIssue(repo string, issueID int, label string) error {
+	issue, err := gh.GetIssue(repo, issueID)
 	if err != nil {
 		fmt.Printf("error %s\n", err.Error())
 		return err
@@ -129,9 +129,9 @@ func (gh *GithubHelper) AddLabelToIssue(issueID int, label string) error {
   return nil
 }
 
-func (gh *GithubHelper) AddUserToIssue(issueID int, user string) error {
+func (gh *GithubHelper) AddUserToIssue(repo string, issueID int, user string) error {
 
-	gh.client.Issues.AddAssignees(gh.ctx, gh.owner, gh.repo, issueID, []string{user})
+	gh.client.Issues.AddAssignees(gh.ctx, gh.owner, repo, issueID, []string{user})
 	return nil
 }
 
