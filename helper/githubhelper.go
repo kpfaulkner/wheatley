@@ -13,15 +13,13 @@ import (
 type GithubHelper struct {
 	client *github.Client
   ctx context.Context
-	repo string
 	owner string
 	token string
 }
 
-func NewGithubHelper(owner string, repo string, apikey string) *GithubHelper {
+func NewGithubHelper(owner string, apikey string) *GithubHelper {
 	gh := GithubHelper{}
 	gh.owner = owner
-	gh.repo = repo
 	gh.token = apikey
   gh.ctx = context.Background()
 	gh.client = getClient(gh.token)
@@ -38,8 +36,8 @@ func getClient(token string) *github.Client {
   return client
 }
 
-func (gh *GithubHelper) GetPR(prID int) ( *github.PullRequest, error) {
-	pr, _, err := gh.client.PullRequests.Get(gh.ctx, gh.owner, gh.repo, prID)
+func (gh *GithubHelper) GetPR(repo string, prID int) ( *github.PullRequest, error) {
+	pr, _, err := gh.client.PullRequests.Get(gh.ctx, gh.owner, repo, prID)
 	if err != nil {
 		fmt.Printf("error %s\n", err.Error())
 		return nil, err
@@ -67,9 +65,9 @@ func (gh *GithubHelper) GetIssue(repo string, issueID int) (*github.Issue, error
 }
 
 
-func (gh *GithubHelper) addLabelToIssue(id int, label string) error {
+func (gh *GithubHelper) addLabelToIssue(repo string,id int, label string) error {
 
-	_,_,err :=gh.client.Issues.AddLabelsToIssue(gh.ctx, gh.owner, gh.repo,id, []string{label})
+	_,_,err :=gh.client.Issues.AddLabelsToIssue(gh.ctx, gh.owner, repo,id, []string{label})
 	if err != nil {
 		fmt.Printf("addLabelToIssue error %s\n", err.Error())
 		return err
@@ -87,8 +85,8 @@ func doesLabelExist( label string, labelList []string) bool {
   return false
 }
 
-func (gh *GithubHelper) AddLabelToPR(prID int, label string) error {
-  pr, err := gh.GetPR(prID)
+func (gh *GithubHelper) AddLabelToPR(repo string, prID int, label string) error {
+  pr, err := gh.GetPR(repo, prID)
   if err != nil {
   	fmt.Printf("error %s\n", err.Error())
   	return err
@@ -101,7 +99,7 @@ func (gh *GithubHelper) AddLabelToPR(prID int, label string) error {
 
 	lowerLabel := strings.ToLower(label)
   if !doesLabelExist(lowerLabel, allLabels) {
-		gh.addLabelToIssue(prID, label)
+		gh.addLabelToIssue(repo, prID, label)
   }
 
   return nil
@@ -123,7 +121,7 @@ func (gh *GithubHelper) AddLabelToIssue(repo string, issueID int, label string) 
 
 	lowerLabel := strings.ToLower(label)
 	if !doesLabelExist(lowerLabel, allLabels) {
-		gh.addLabelToIssue(issueID, label)
+		gh.addLabelToIssue(repo, issueID, label)
 	}
 
   return nil
