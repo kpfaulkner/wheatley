@@ -11,43 +11,44 @@ import (
 	"time"
 )
 
-
 type DBConfig struct {
-	SubscriptionID string   `json:"SubscriptionID"`
-	TenantID       string   `json:"TenantID"`
-	ClientID       string   `json:"ClientID"`
-	ClientSecret   string   `json:"ClientSecret"`
-	ResourceGroup  string   `json:"ResourceGroup"`
-	StorageKey string       `json:"StorageKey"`
-	StorageURL string       `json:"StorageURL"`
-	SqlAdminLogin string    `json:"SqlAdminLogin"`
-	SqlAdminPassword string `json:"SqlAdminPassword"`
-	AllowedUsers string     `json:"AllowedUsers"`
-  BackupPrefix string     `json:"BackupPrefix"`
-	ServerName string       `json:"ServerName"`
-	DatabaseName string     `json:"DatabaseName"`
+	SubscriptionID         string `json:"SubscriptionID"`
+	TenantID               string `json:"TenantID"`
+	ClientID               string `json:"ClientID"`
+	ClientSecret           string `json:"ClientSecret"`
+	ResourceGroup          string `json:"ResourceGroup"`
+	StorageKey             string `json:"StorageKey"`
+	StorageURL             string `json:"StorageURL"`
+	SqlExportAdminLogin    string `json:"SqlExportAdminLogin"`
+	SqlExportAdminPassword string `json:"SqlExportAdminPassword"`
+	SqlImportAdminLogin    string `json:"SqlImportAdminLogin"`
+	SqlImportAdminPassword string `json:"SqlImportAdminPassword"`
+	AllowedUsers           string `json:"AllowedUsers"`
+	BackupPrefix           string `json:"BackupPrefix"`
+	ServerName             string `json:"ServerName"`
+	DatabaseName           string `json:"DatabaseName"`
 
 	AllowedUsersList []string
-
 }
 
 type DatabaseBackupMessageHandler struct {
 	asHelper *helper.AzureSQLHelper
 
 	// config specific to test LPC.
-  config *DBConfig
+	config *DBConfig
 }
 
 func NewDatabaseBackupMessageHandler() *DatabaseBackupMessageHandler {
 	asHandler := DatabaseBackupMessageHandler{}
-	asHandler.config,_ = loadDBConfig("azuredb.json")
+	asHandler.config, _ = loadDBConfig("azuredb.json")
 	asHandler.asHelper = helper.NewAzureSQLHelper(asHandler.config.SubscriptionID, asHandler.config.TenantID, asHandler.config.ClientID,
-																								asHandler.config.ClientSecret, asHandler.config.SqlAdminLogin, asHandler.config.SqlAdminPassword,
-																								asHandler.config.StorageKey, asHandler.config.StorageURL, asHandler.config.ResourceGroup )
-  return &asHandler
+		asHandler.config.ClientSecret, asHandler.config.SqlExportAdminLogin, asHandler.config.SqlExportAdminPassword,
+		asHandler.config.SqlImportAdminLogin, asHandler.config.SqlImportAdminPassword,
+		asHandler.config.StorageKey, asHandler.config.StorageURL, asHandler.config.ResourceGroup)
+	return &asHandler
 }
 
-func loadDBConfig(filename string ) (*DBConfig, error)  {
+func loadDBConfig(filename string) (*DBConfig, error) {
 	configFile, err := os.Open(filename)
 	defer configFile.Close()
 	if err != nil {
@@ -59,19 +60,19 @@ func loadDBConfig(filename string ) (*DBConfig, error)  {
 	jsonParser.Decode(&config)
 
 	// split users for later checking.
-	config.AllowedUsersList = strings.Split(config.AllowedUsers,",")
-  return &config, nil
+	config.AllowedUsersList = strings.Split(config.AllowedUsers, ",")
+	return &config, nil
 }
 
 func userAllowed(user string, allowedUsers []string) bool {
 	lowerUser := strings.ToLower(user)
-  for _,au := range allowedUsers {
-  	if strings.ToLower(au) == lowerUser {
-  		return true
-	  }
-  }
+	for _, au := range allowedUsers {
+		if strings.ToLower(au) == lowerUser {
+			return true
+		}
+	}
 
-  return false
+	return false
 }
 
 // ParseMessage takes a message, determines what to do
@@ -89,7 +90,7 @@ func (ss *DatabaseBackupMessageHandler) ParseMessage(msg string, user string) (s
 
 	case backupProdRegex.MatchString(msg):
 		res := backupProdRegex.FindStringSubmatch(msg)
-		if res != nil  {
+		if res != nil {
 
 			if !userAllowed(user, ss.config.AllowedUsersList) {
 				return "Sorry not permitted to do this.", nil

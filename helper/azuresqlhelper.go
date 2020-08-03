@@ -8,27 +8,31 @@ import (
 )
 
 type AzureSQLHelper struct {
-  azureAuth *AzureAuth
-	subscriptionID string
-  tenantID string
-  clientID string
-  clientSecret string
-	sqlAdminLogin string
-  sqlAdminPassword string
-  storageKey string
-  storageURL string
-	sqlRgName string
+  azureAuth           *AzureAuth
+	subscriptionID      string
+  tenantID            string
+  clientID            string
+  clientSecret        string
+	sqlExportAdminLogin    string
+  sqlExportAdminPassword string
+	sqlImportAdminLogin    string
+	sqlImportAdminPassword string
+  storageKey             string
+  storageURL          string
+	sqlRgName           string
 }
 
-func NewAzureSQLHelper(subscriptionID string, tenantID string, clientID string, clientSecret string, sqlAdminLogin string, sqlAdminPassword string, storageKey string, storageURL string, sqlRgName string ) *AzureSQLHelper {
+func NewAzureSQLHelper(subscriptionID string, tenantID string, clientID string, clientSecret string, sqlExportAdminLogin string, sqlExportAdminPassword string,sqlImportAdminLogin string, sqlImportAdminPassword string, storageKey string, storageURL string, sqlRgName string ) *AzureSQLHelper {
 	ah := AzureSQLHelper{}
 	ah.azureAuth = NewAzureAuth(tenantID, clientID, clientSecret)
 	ah.subscriptionID = subscriptionID
 	ah.tenantID = tenantID
 	ah.clientID = clientID
 	ah.clientSecret = clientSecret
-	ah.sqlAdminLogin = sqlAdminLogin
-	ah.sqlAdminPassword = sqlAdminPassword
+	ah.sqlExportAdminLogin = sqlExportAdminLogin
+	ah.sqlExportAdminPassword = sqlExportAdminPassword
+	ah.sqlImportAdminLogin = sqlImportAdminLogin
+	ah.sqlImportAdminPassword = sqlImportAdminPassword
 	ah.storageKey = storageKey
 	ah.storageURL = storageURL
 	ah.sqlRgName = sqlRgName
@@ -83,7 +87,7 @@ func (ah *AzureSQLHelper) StartDBExport(serverName string, databaseName string ,
 	}
 
 	storageURI := fmt.Sprintf("%s/%s", ah.storageURL, backupFileName)
-	body := generateExportBody(ah.sqlAdminLogin, ah.sqlAdminPassword, ah.storageKey, "SharedAccessKey", storageURI)
+	body := generateExportBody(ah.sqlExportAdminLogin, ah.sqlExportAdminPassword, ah.storageKey, "SharedAccessKey", storageURI)
 	url := generateExportURL(ah.subscriptionID, ah.sqlRgName, serverName, databaseName)
 	client := &http.Client{}
 
@@ -110,7 +114,7 @@ func (ah *AzureSQLHelper) StartDBExport(serverName string, databaseName string ,
 // StartDBImport starts to import from a blob backup file to a specific DB server and dbname
 // keep to a default size for now.
 // https://docs.microsoft.com/en-us/rest/api/sql/databases%20-%20import%20export/import
-func (ah *AzureSQLHelper) StartDBImport(serverName string, databaseName string , backupBlobName string ) error {
+func (ah *AzureSQLHelper) StartDBImport(importServerName string, databaseName string , backupBlobName string ) error {
 
 	// refresh all the tokens!!!
 	err := ah.refreshToken()
@@ -119,8 +123,8 @@ func (ah *AzureSQLHelper) StartDBImport(serverName string, databaseName string ,
 	}
 
 	storageURI := fmt.Sprintf("%s/%s", ah.storageURL, backupBlobName)
-	body := generateImportBody(ah.sqlAdminLogin, ah.sqlAdminPassword, ah.storageKey, "SharedAccessKey", storageURI,  databaseName, "Basic", 100000  )
-	url := generateImportURL(ah.subscriptionID, ah.sqlRgName, serverName)
+	body := generateImportBody(ah.sqlImportAdminLogin, ah.sqlImportAdminPassword, ah.storageKey, "SharedAccessKey", storageURI,  databaseName, "Basic", 100000  )
+	url := generateImportURL(ah.subscriptionID, ah.sqlRgName, importServerName)
 	client := &http.Client{}
 
 	req, err := http.NewRequest("POST", url, strings.NewReader(body))

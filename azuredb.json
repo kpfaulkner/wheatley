@@ -6,7 +6,9 @@
   "ResourceGroup": "",
   "StorageKey": "",
   "StorageURL": "",
-  "SqlAdminLogin": "",
-  "SqlAdminPassword":"",
+  "SqlExportAdminLogin": "",
+  "SqlExportAdminPassword":"",
+  "SqlImportAdminLogin": "",
+  "SqlImportAdminPassword":"",
   "AllowedUsers": ""
 }
