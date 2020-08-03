@@ -17,7 +17,8 @@ type DBConfig struct {
 	TenantID               string `json:"TenantID"`
 	ClientID               string `json:"ClientID"`
 	ClientSecret           string `json:"ClientSecret"`
-	ResourceGroup          string `json:"ResourceGroup"`
+	ExportResourceGroup    string `json:"ExportResourceGroup"`
+	ImportResourceGroup    string `json:"ImportResourceGroup"`
 	StorageKey             string `json:"StorageKey"`
 	StorageURL             string `json:"StorageURL"`
 	SqlExportAdminLogin    string `json:"SqlExportAdminLogin"`
@@ -26,7 +27,8 @@ type DBConfig struct {
 	SqlImportAdminPassword string `json:"SqlImportAdminPassword"`
 	AllowedUsers           string `json:"AllowedUsers"`
 	BackupPrefix           string `json:"BackupPrefix"`
-	ServerName             string `json:"ServerName"`
+	ExportServerName       string `json:"ExportServerName"`
+	ImportServerName       string `json:"ImportServerName"`
 	DatabaseName           string `json:"DatabaseName"`
 
 	AllowedUsersList []string
@@ -45,7 +47,7 @@ func NewDatabaseBackupMessageHandler() *DatabaseBackupMessageHandler {
 	asHandler.asHelper = helper.NewAzureSQLHelper(asHandler.config.ImportSubscriptionID, asHandler.config.ExportSubscriptionID, asHandler.config.TenantID, asHandler.config.ClientID,
 		asHandler.config.ClientSecret, asHandler.config.SqlExportAdminLogin, asHandler.config.SqlExportAdminPassword,
 		asHandler.config.SqlImportAdminLogin, asHandler.config.SqlImportAdminPassword,
-		asHandler.config.StorageKey, asHandler.config.StorageURL, asHandler.config.ResourceGroup)
+		asHandler.config.StorageKey, asHandler.config.StorageURL, asHandler.config.ExportResourceGroup, asHandler.config.ImportResourceGroup)
 	return &asHandler
 }
 
@@ -98,7 +100,7 @@ func (ss *DatabaseBackupMessageHandler) ParseMessage(msg string, user string) (s
 			}
 
 			backupName := fmt.Sprintf("%s-%s.bacpac", ss.config.BackupPrefix, time.Now().Format("2006-01-02"))
-			err := ss.asHelper.StartDBExport(ss.config.ServerName, ss.config.DatabaseName, backupName)
+			err := ss.asHelper.StartDBExport(ss.config.ExportServerName, ss.config.DatabaseName, backupName)
 			if err != nil {
 				return "Cannot backup database!!\n", nil
 			}

@@ -8,22 +8,23 @@ import (
 )
 
 type AzureSQLHelper struct {
-  azureAuth              *AzureAuth
+	azureAuth              *AzureAuth
 	exportSubscriptionID   string
 	importSubscriptionID   string
-  tenantID               string
-  clientID               string
-  clientSecret           string
+	tenantID               string
+	clientID               string
+	clientSecret           string
 	sqlExportAdminLogin    string
-  sqlExportAdminPassword string
+	sqlExportAdminPassword string
 	sqlImportAdminLogin    string
 	sqlImportAdminPassword string
-  storageKey             string
-  storageURL             string
-	sqlRgName              string
+	storageKey             string
+	storageURL             string
+	exportSqlRgName        string
+	importSqlRgName        string
 }
 
-func NewAzureSQLHelper(importSubscriptionID string, exportSubscriptionID string, tenantID string, clientID string, clientSecret string, sqlExportAdminLogin string, sqlExportAdminPassword string,sqlImportAdminLogin string, sqlImportAdminPassword string, storageKey string, storageURL string, sqlRgName string ) *AzureSQLHelper {
+func NewAzureSQLHelper(importSubscriptionID string, exportSubscriptionID string, tenantID string, clientID string, clientSecret string, sqlExportAdminLogin string, sqlExportAdminPassword string, sqlImportAdminLogin string, sqlImportAdminPassword string, storageKey string, storageURL string, exportSqlRgName string, importSqlRgName string) *AzureSQLHelper {
 	ah := AzureSQLHelper{}
 	ah.azureAuth = NewAzureAuth(tenantID, clientID, clientSecret)
 	ah.exportSubscriptionID = exportSubscriptionID
@@ -37,7 +38,8 @@ func NewAzureSQLHelper(importSubscriptionID string, exportSubscriptionID string,
 	ah.sqlImportAdminPassword = sqlImportAdminPassword
 	ah.storageKey = storageKey
 	ah.storageURL = storageURL
-	ah.sqlRgName = sqlRgName
+	ah.exportSqlRgName = exportSqlRgName
+	ah.importSqlRgName = importSqlRgName
 	return &ah
 }
 
@@ -58,13 +60,12 @@ func generateImportURL(subscriptionID string, rgName string, serverName string) 
 }
 
 func generateImportBody(adminLogin string, adminLoginPassword string, storageKey string, storageKeyType string,
-											  storageUri string, databaseName string, edition string, maxSizeBytes int) string {
+	storageUri string, databaseName string, edition string, maxSizeBytes int) string {
 	template := `{administratorLogin: "%s",administratorLoginPassword: "%s",storageKey: "%s",storageKeyType: "%s",storageUri: "%s", 
 								databasename:"%s", edition:"%s", serviceObjectiveName:"%s",maxSizeBytes:"%d"}`
 	body := fmt.Sprintf(template, adminLogin, adminLoginPassword, storageKey, storageKeyType, storageUri, databaseName, edition, edition, maxSizeBytes)
 	return body
 }
-
 
 func generateExportURL(subscriptionID string, rgName string, serverName string, databaseName string) string {
 	template := "https://management.azure.com/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Sql/servers/%s/databases/%s/export?api-version=2014-04-01"
@@ -80,7 +81,7 @@ func generateExportBody(adminLogin string, adminLoginPassword string, storageKey
 
 // StartDBExport starts an export of an Azure DB to blob storage.
 // https://docs.microsoft.com/en-us/rest/api/sql/databases%20-%20import%20export/export
-func (ah *AzureSQLHelper) StartDBExport(serverName string, databaseName string , backupFileName string) error {
+func (ah *AzureSQLHelper) StartDBExport(serverName string, databaseName string, backupFileName string) error {
 
 	// refresh all the tokens!!!
 	err := ah.refreshToken()
@@ -90,11 +91,11 @@ func (ah *AzureSQLHelper) StartDBExport(serverName string, databaseName string ,
 
 	storageURI := fmt.Sprintf("%s/%s", ah.storageURL, backupFileName)
 	body := generateExportBody(ah.sqlExportAdminLogin, ah.sqlExportAdminPassword, ah.storageKey, "SharedAccessKey", storageURI)
-	url := generateExportURL(ah.exportSubscriptionID, ah.sqlRgName, serverName, databaseName)
+	url := generateExportURL(ah.exportSubscriptionID, ah.exportSqlRgName, serverName, databaseName)
 	client := &http.Client{}
 
 	req, err := http.NewRequest("POST", url, strings.NewReader(body))
-	req.Header.Add("Authorization", "Bearer " + ah.currentToken().AccessToken)
+	req.Header.Add("Authorization", "Bearer "+ah.currentToken().AccessToken)
 	req.Header.Add("Content-type", "application/json")
 
 	resp, err := client.Do(req)
@@ -106,7 +107,7 @@ func (ah *AzureSQLHelper) StartDBExport(serverName string, databaseName string ,
 	fmt.Printf("status code is %d\n", resp.StatusCode)
 
 	// if status begins with 4.... assume failure.
-	if strings.HasPrefix( resp.Status, "4") {
+	if strings.HasPrefix(resp.Status, "4") {
 		return errors.New("unable to start backup")
 	}
 
@@ -116,7 +117,7 @@ func (ah *AzureSQLHelper) StartDBExport(serverName string, databaseName string ,
 // StartDBImport starts to import from a blob backup file to a specific DB server and dbname
 // keep to a default size for now.
 // https://docs.microsoft.com/en-us/rest/api/sql/databases%20-%20import%20export/import
-func (ah *AzureSQLHelper) StartDBImport(importServerName string, databaseName string , backupBlobName string ) error {
+func (ah *AzureSQLHelper) StartDBImport(importServerName string, databaseName string, backupBlobName string) error {
 
 	// refresh all the tokens!!!
 	err := ah.refreshToken()
@@ -125,12 +126,12 @@ func (ah *AzureSQLHelper) StartDBImport(importServerName string, databaseName st
 	}
 
 	storageURI := fmt.Sprintf("%s/%s", ah.storageURL, backupBlobName)
-	body := generateImportBody(ah.sqlImportAdminLogin, ah.sqlImportAdminPassword, ah.storageKey, "SharedAccessKey", storageURI,  databaseName, "Basic", 100000  )
-	url := generateImportURL(ah.importSubscriptionID, ah.sqlRgName, importServerName)
+	body := generateImportBody(ah.sqlImportAdminLogin, ah.sqlImportAdminPassword, ah.storageKey, "SharedAccessKey", storageURI, databaseName, "Basic", 100000)
+	url := generateImportURL(ah.importSubscriptionID, ah.importSqlRgName, importServerName)
 	client := &http.Client{}
 
 	req, err := http.NewRequest("POST", url, strings.NewReader(body))
-	req.Header.Add("Authorization", "Bearer " + ah.currentToken().AccessToken)
+	req.Header.Add("Authorization", "Bearer "+ah.currentToken().AccessToken)
 	req.Header.Add("Content-type", "application/json")
 
 	resp, err := client.Do(req)
@@ -142,7 +143,7 @@ func (ah *AzureSQLHelper) StartDBImport(importServerName string, databaseName st
 	fmt.Printf("status code is %d\n", resp.StatusCode)
 
 	// if status begins with 4.... assume failure.
-	if strings.HasPrefix( resp.Status, "4") {
+	if strings.HasPrefix(resp.Status, "4") {
 		return errors.New("unable to start backup")
 	}
 
