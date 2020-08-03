@@ -12,7 +12,8 @@ import (
 )
 
 type DBConfig struct {
-	SubscriptionID         string `json:"SubscriptionID"`
+	ExportSubscriptionID   string `json:"ExportSubscriptionID"`
+	ImportSubscriptionID   string `json:"ImportSubscriptionID"`
 	TenantID               string `json:"TenantID"`
 	ClientID               string `json:"ClientID"`
 	ClientSecret           string `json:"ClientSecret"`
@@ -41,7 +42,7 @@ type DatabaseBackupMessageHandler struct {
 func NewDatabaseBackupMessageHandler() *DatabaseBackupMessageHandler {
 	asHandler := DatabaseBackupMessageHandler{}
 	asHandler.config, _ = loadDBConfig("azuredb.json")
-	asHandler.asHelper = helper.NewAzureSQLHelper(asHandler.config.SubscriptionID, asHandler.config.TenantID, asHandler.config.ClientID,
+	asHandler.asHelper = helper.NewAzureSQLHelper(asHandler.config.ImportSubscriptionID, asHandler.config.ExportSubscriptionID, asHandler.config.TenantID, asHandler.config.ClientID,
 		asHandler.config.ClientSecret, asHandler.config.SqlExportAdminLogin, asHandler.config.SqlExportAdminPassword,
 		asHandler.config.SqlImportAdminLogin, asHandler.config.SqlImportAdminPassword,
 		asHandler.config.StorageKey, asHandler.config.StorageURL, asHandler.config.ResourceGroup)

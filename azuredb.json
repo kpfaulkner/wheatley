@@ -1,5 +1,6 @@
 {
-  "SubscriptionID": "",
+  "ExportSubscriptionID": "",
+  "ImportSubscriptionID": "",
   "TenantID": "",
   "ClientID": "",
   "ClientSecret": "",
