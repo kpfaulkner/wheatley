@@ -63,7 +63,7 @@ func generateImportURL(subscriptionID string, rgName string, serverName string) 
 func generateImportBody(adminLogin string, adminLoginPassword string, storageKey string, storageKeyType string,
 	storageUri string, databaseName string, edition string, maxSizeBytes int) string {
 	template := `{administratorLogin: "%s",administratorLoginPassword: "%s",storageKey: "%s",storageKeyType: "%s",storageUri: "%s", 
-								databasename:"%s", edition:"%s", serviceObjectiveName:"%s",maxSizeBytes:"%d"}`
+								databasename:"%s", edition:"%s",tier:"Standard", skuName:"S2", location:"souhtcentralus", serviceObjectiveName:"%s",maxSizeBytes:"%d"}`
 	body := fmt.Sprintf(template, adminLogin, adminLoginPassword, storageKey, storageKeyType, storageUri, databaseName, edition, edition, maxSizeBytes)
 	return body
 }
