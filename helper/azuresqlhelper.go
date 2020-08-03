@@ -3,6 +3,7 @@ package helper
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"strings"
 )
@@ -141,6 +142,8 @@ func (ah *AzureSQLHelper) StartDBImport(importServerName string, databaseName st
 	}
 
 	fmt.Printf("status code is %d\n", resp.StatusCode)
+	b, _ := ioutil.ReadAll(resp.Body)
+	fmt.Printf("body is %s\n", string(b))
 
 	// if status begins with 4.... assume failure.
 	if strings.HasPrefix(resp.Status, "4") {
