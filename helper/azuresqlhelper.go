@@ -65,7 +65,7 @@ func generateImportURL(subscriptionID string, rgName string, serverName string) 
 func generateImportBody(adminLogin string, adminLoginPassword string, storageKey string, storageKeyType string,
 	storageUri string, databaseName string, edition string, maxSizeBytes int) string {
 	template := `{administratorLogin: "%s",administratorLoginPassword: "%s",storageKey: "%s",storageKeyType: "%s",storageUri: "%s", 
-								databasename:"%s", edition:"%s",tier:"Standard", skuName:"S2", location:"souhtcentralus", serviceObjectiveName:"%s",maxSizeBytes:"%d"}`
+								databasename:"%s", edition:"%s",tier:"Standard", skuName:"S2", location:"southcentralus", serviceObjectiveName:"%s",maxSizeBytes:"%d"}`
 	body := fmt.Sprintf(template, adminLogin, adminLoginPassword, storageKey, storageKeyType, storageUri, databaseName, edition, edition, maxSizeBytes)
 	return body
 }
@@ -129,7 +129,7 @@ func (ah *AzureSQLHelper) StartDBImport(importServerName string, databaseName st
 	}
 
 	storageURI := fmt.Sprintf("%s/%s", ah.storageURL, backupBlobName)
-	body := generateImportBody(ah.sqlImportAdminLogin, ah.sqlImportAdminPassword, ah.storageKey, "SharedAccessKey", storageURI, databaseName, "Basic", 4000000000)
+	body := generateImportBody(ah.sqlImportAdminLogin, ah.sqlImportAdminPassword, ah.storageKey, "StorageAccessKey", storageURI, databaseName, "Basic", 4000000000)
 	url := generateImportURL(ah.importSubscriptionID, ah.importSqlRgName, importServerName)
 	client := &http.Client{}
 
