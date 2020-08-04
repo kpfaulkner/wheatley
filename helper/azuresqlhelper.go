@@ -23,9 +23,10 @@ type AzureSQLHelper struct {
 	storageURL             string
 	exportSqlRgName        string
 	importSqlRgName        string
+	importStorageKey       string
 }
 
-func NewAzureSQLHelper(importSubscriptionID string, exportSubscriptionID string, tenantID string, clientID string, clientSecret string, sqlExportAdminLogin string, sqlExportAdminPassword string, sqlImportAdminLogin string, sqlImportAdminPassword string, storageKey string, storageURL string, exportSqlRgName string, importSqlRgName string) *AzureSQLHelper {
+func NewAzureSQLHelper(importSubscriptionID string, exportSubscriptionID string, tenantID string, clientID string, clientSecret string, sqlExportAdminLogin string, sqlExportAdminPassword string, sqlImportAdminLogin string, sqlImportAdminPassword string, storageKey string, storageURL string, exportSqlRgName string, importSqlRgName string, importStorageKey string) *AzureSQLHelper {
 	ah := AzureSQLHelper{}
 	ah.azureAuth = NewAzureAuth(tenantID, clientID, clientSecret)
 	ah.exportSubscriptionID = exportSubscriptionID
@@ -41,6 +42,7 @@ func NewAzureSQLHelper(importSubscriptionID string, exportSubscriptionID string,
 	ah.storageURL = storageURL
 	ah.exportSqlRgName = exportSqlRgName
 	ah.importSqlRgName = importSqlRgName
+	ah.importStorageKey = importStorageKey
 	return &ah
 }
 

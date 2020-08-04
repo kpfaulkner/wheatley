@@ -30,6 +30,7 @@ type DBConfig struct {
 	ExportServerName       string `json:"ExportServerName"`
 	ImportServerName       string `json:"ImportServerName"`
 	DatabaseName           string `json:"DatabaseName"`
+	ImportStorageKey       string `json:"DatabaseName"`
 
 	AllowedUsersList []string
 }
@@ -47,7 +48,7 @@ func NewDatabaseBackupMessageHandler() *DatabaseBackupMessageHandler {
 	asHandler.asHelper = helper.NewAzureSQLHelper(asHandler.config.ImportSubscriptionID, asHandler.config.ExportSubscriptionID, asHandler.config.TenantID, asHandler.config.ClientID,
 		asHandler.config.ClientSecret, asHandler.config.SqlExportAdminLogin, asHandler.config.SqlExportAdminPassword,
 		asHandler.config.SqlImportAdminLogin, asHandler.config.SqlImportAdminPassword,
-		asHandler.config.StorageKey, asHandler.config.StorageURL, asHandler.config.ExportResourceGroup, asHandler.config.ImportResourceGroup)
+		asHandler.config.StorageKey, asHandler.config.StorageURL, asHandler.config.ExportResourceGroup, asHandler.config.ImportResourceGroup, asHandler.config.ImportStorageKey)
 	return &asHandler
 }
 

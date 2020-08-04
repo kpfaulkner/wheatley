@@ -12,5 +12,6 @@
   "SqlExportAdminPassword":"",
   "SqlImportAdminLogin": "",
   "SqlImportAdminPassword":"",
-  "AllowedUsers": ""
+  "AllowedUsers": "",
+  "ImportStorageKey": ""
 }
