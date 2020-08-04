@@ -56,17 +56,17 @@ func (ah *AzureSQLHelper) refreshToken() error {
 	return err
 }
 
-func generateImportURL(subscriptionID string, rgName string, serverName string) string {
-	template := "https://management.azure.com/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Sql/servers/%s/import?api-version=2014-04-01"
-	url := fmt.Sprintf(template, subscriptionID, rgName, serverName)
+func generateImportURL(subscriptionID string, rgName string, serverName string, databaseName string) string {
+	template := "https://management.azure.com/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Sql/servers/%s/databases/%s/extensions/import?api-version=2014-04-01"
+	url := fmt.Sprintf(template, subscriptionID, rgName, serverName,databaseName)
 	return url
 }
 
-func generateImportBody(adminLogin string, adminLoginPassword string, storageKey string, storageKeyType string,
-	storageUri string, databaseName string, edition string, maxSizeBytes int) string {
-	template := `{administratorLogin: "%s",administratorLoginPassword: "%s",storageKey: "%s",storageKeyType: "%s",storageUri: "%s", 
-								databasename:"%s", edition:"%s",tier:"Standard", skuName:"S2", location:"southcentralus", serviceObjectiveName:"%s",maxSizeBytes:"%d"}`
-	body := fmt.Sprintf(template, adminLogin, adminLoginPassword, storageKey, storageKeyType, storageUri, databaseName, edition, edition, maxSizeBytes)
+func generateImportBody(adminLogin string, adminLoginPassword string, storageKey string,storageUri string) string {
+	/*template2 := `{administratorLogin: "%s",administratorLoginPassword: "%s",storageKey: "%s",storageKeyType: "%s",storageUri: "%s",
+								databasename:"%s", edition:"%s",tier:"Standard", skuName:"S2", location:"southcentralus", serviceObjectiveName:"%s",maxSizeBytes:"%d"}` */
+	template := `{"properties": {"storageKeyType": "StorageAccessKey", "storageKey": "%s", "storageUri": "%s", "administratorLogin": "%s", "administratorLoginPassword": "%s", "operationMode": "Import"}}`
+	body := fmt.Sprintf(template, storageKey,storageUri,adminLogin, adminLoginPassword)
 	return body
 }
 
@@ -129,17 +129,17 @@ func (ah *AzureSQLHelper) StartDBImport(importServerName string, databaseName st
 	}
 
 	storageURI := fmt.Sprintf("%s/%s", ah.storageURL, backupBlobName)
-	body := generateImportBody(ah.sqlImportAdminLogin, ah.sqlImportAdminPassword, ah.storageKey, "StorageAccessKey", storageURI, databaseName, "Basic", 4000000000)
-	url := generateImportURL(ah.importSubscriptionID, ah.importSqlRgName, importServerName)
+	body := generateImportBody(ah.sqlImportAdminLogin, ah.sqlImportAdminPassword, ah.storageKey, storageURI)
+	url := generateImportURL(ah.importSubscriptionID, ah.importSqlRgName, importServerName, databaseName)
 	client := &http.Client{}
 
-	req, err := http.NewRequest("POST", url, strings.NewReader(body))
+	req, err := http.NewRequest("PUT", url, strings.NewReader(body))
 	req.Header.Add("Authorization", "Bearer "+ah.currentToken().AccessToken)
 	req.Header.Add("Content-type", "application/json")
 
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Printf("error on post %s\n", err.Error())
+		fmt.Printf("error on put %s\n", err.Error())
 		panic(err)
 	}
 
