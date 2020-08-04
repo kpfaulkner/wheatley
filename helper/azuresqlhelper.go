@@ -129,7 +129,7 @@ func (ah *AzureSQLHelper) StartDBImport(importServerName string, databaseName st
 	}
 
 	storageURI := fmt.Sprintf("%s/%s", ah.storageURL, backupBlobName)
-	body := generateImportBody(ah.sqlImportAdminLogin, ah.sqlImportAdminPassword, ah.storageKey, storageURI)
+	body := generateImportBody(ah.sqlImportAdminLogin, ah.sqlImportAdminPassword, ah.importStorageKey, storageURI)
 	url := generateImportURL(ah.importSubscriptionID, ah.importSqlRgName, importServerName, databaseName)
 	client := &http.Client{}
 
