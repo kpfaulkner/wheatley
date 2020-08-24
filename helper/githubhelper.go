@@ -36,6 +36,21 @@ func getClient(token string) *github.Client {
   return client
 }
 
+func (gh *GithubHelper) GetMergeCommentsBetweenCommits(repo string, commit1 string, commit2 string) ( []string, error) {
+
+	cc, _, err := gh.client.Repositories.CompareCommits(gh.ctx, gh.owner, repo, commit1, commit2 )
+	if err != nil {
+		fmt.Printf("error %s\n", err.Error())
+		return nil, err
+	}
+
+	for _, commit := range cc.Commits {
+		fmt.Printf("comment %s\n", *(commit.GetCommit().Message))
+	}
+
+	return nil,nil
+}
+
 func (gh *GithubHelper) GetPR(repo string, prID int) ( *github.PullRequest, error) {
 	pr, _, err := gh.client.PullRequests.Get(gh.ctx, gh.owner, repo, prID)
 	if err != nil {

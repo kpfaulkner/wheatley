@@ -154,3 +154,52 @@ func (ah *AzureSQLHelper) StartDBImport(importServerName string, databaseName st
 
 	return nil
 }
+
+// CreateDB Creates DB
+// https://docs.microsoft.com/en-us/rest/api/sql/databases/createorupdate#code-try-0
+func (ah *AzureSQLHelper) CreateDB(importServerName string, databaseName string) error {
+
+	// refresh all the tokens!!!
+	err := ah.refreshToken()
+	if err != nil {
+		return err
+	}
+
+	body := generateCreateDBBody("ah.sqlImportAdminLogin, ah.sqlImportAdminPassword, ah.importStorageKey, storageURI")
+	url := generateCreateDBURL(ah.importSubscriptionID, ah.importSqlRgName, importServerName, databaseName)
+	client := &http.Client{}
+
+	req, err := http.NewRequest("PUT", url, strings.NewReader(body))
+	req.Header.Add("Authorization", "Bearer "+ah.currentToken().AccessToken)
+	req.Header.Add("Content-type", "application/json")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Printf("error on put %s\n", err.Error())
+		panic(err)
+	}
+
+	fmt.Printf("status code is %d\n", resp.StatusCode)
+	b, _ := ioutil.ReadAll(resp.Body)
+	fmt.Printf("body is %s\n", string(b))
+
+	// if status begins with 4.... assume failure.
+	if strings.HasPrefix(resp.Status, "4") {
+		return errors.New("unable to start backup")
+	}
+
+	return nil
+}
+
+
+func generateCreateDBURL(subscriptionID string, rgName string, serverName string, databaseName string) string {
+	template := "https://management.azure.com/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Sql/servers/%s/databases/%s?api-version=2017-10-01-preview"
+	url := fmt.Sprintf(template, subscriptionID, rgName, serverName,databaseName)
+	return url
+}
+
+func generateCreateDBBody(dbSku string) string {
+	template := ` {"location": "southcentralus", "sku": {"name": "%s"}}`
+	body := fmt.Sprintf(template, dbSku)
+	return body
+}
