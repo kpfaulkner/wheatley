@@ -38,7 +38,7 @@ func getClient(token string) *github.Client {
 
 func (gh *GithubHelper) GetBranchesForRepo(repo string) ( []*github.Branch, error) {
 
-	branches, _, err := gh.client.Repositories.ListBranches(gh.ctx, gh.owner, repo, nil)
+	branches, _, err := gh.client.Repositories.ListBranches(gh.ctx, gh.owner, repo, &github.ListOptions{PerPage: 1000})
 	if err != nil {
 		fmt.Printf("error %s\n", err.Error())
 		return nil, err
