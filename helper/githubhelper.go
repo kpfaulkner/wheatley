@@ -36,14 +36,32 @@ func getClient(token string) *github.Client {
   return client
 }
 
+// GetBranchesForRepo get all pages until all branches returned.
+// Should never be THAT many that this would cause an issue.
+// (watch me eat these words)
 func (gh *GithubHelper) GetBranchesForRepo(repo string) ( []*github.Branch, error) {
 
-	branches, _, err := gh.client.Repositories.ListBranches(gh.ctx, gh.owner, repo, &github.ListOptions{PerPage: 1000})
-	if err != nil {
-		fmt.Printf("error %s\n", err.Error())
-		return nil, err
+	allBranches := []*github.Branch{}
+	done := false
+	page := 0
+	for !done {
+		branches, _, err := gh.client.Repositories.ListBranches(gh.ctx, gh.owner, repo, &github.ListOptions{Page:page, PerPage: 1000})
+		if err != nil {
+			fmt.Printf("error %s\n", err.Error())
+			done = true
+			continue
+		}
+
+		if len(branches) == 0 {
+			done = true
+			continue
+		}
+
+		page++
+		allBranches = append(allBranches, branches...)
 	}
-	return branches, nil
+
+	return allBranches, nil
 }
 
 
