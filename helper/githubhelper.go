@@ -55,7 +55,7 @@ func (gh *GithubHelper) GetMergeCommentsBetweenCommits(repo string, commit1 stri
 		return nil, err
 	}
 
-	commentSlice := []string
+	commentSlice := []string{}
 	for _, commit := range cc.Commits {
 		commentSlice = append(commentSlice, *commit.GetCommit().Message)
 	}
