@@ -36,6 +36,17 @@ func getClient(token string) *github.Client {
   return client
 }
 
+func (gh *GithubHelper) GetBranchesForRepo(repo string) ( []*github.Branch, error) {
+
+	branches, _, err := gh.client.Repositories.ListBranches(gh.ctx, gh.owner, repo, nil)
+	if err != nil {
+		fmt.Printf("error %s\n", err.Error())
+		return nil, err
+	}
+	return branches, nil
+}
+
+
 func (gh *GithubHelper) GetMergeCommentsBetweenCommits(repo string, commit1 string, commit2 string) ( []string, error) {
 
 	cc, _, err := gh.client.Repositories.CompareCommits(gh.ctx, gh.owner, repo, commit1, commit2 )
@@ -44,11 +55,12 @@ func (gh *GithubHelper) GetMergeCommentsBetweenCommits(repo string, commit1 stri
 		return nil, err
 	}
 
+	commentSlice := []string
 	for _, commit := range cc.Commits {
-		fmt.Printf("comment %s\n", *(commit.GetCommit().Message))
+		commentSlice = append(commentSlice, *commit.GetCommit().Message)
 	}
 
-	return nil,nil
+	return commentSlice,nil
 }
 
 func (gh *GithubHelper) GetPR(repo string, prID int) ( *github.PullRequest, error) {
