@@ -45,6 +45,10 @@ github.com/google/martian v2.1.0+incompatible/go.mod h1:9I4somxYTbIHy5NJKHRl3wXi
 github.com/gorilla/websocket v1.2.0 h1:VJtLvh6VQym50czpZzx07z/kw9EgAxI3x1ZB8taTMQQ=
 github.com/gorilla/websocket v1.2.0/go.mod h1:E7qHFY5m1UJ88s3WnNqhKjPHQ0heANvMoAMk2YaljkQ=
 github.com/joho/godotenv v1.3.0/go.mod h1:7hK45KPybAkOC6peb+G5yklZfMxEjkZhHbwpqxOKXbg=
+github.com/kpfaulkner/act v0.0.0-20201022055632-8cad82044ae0 h1:CFTnqIHp73vdQ6I/YiAAV8u5RGjnFr5jR+6BS+htqgc=
+github.com/kpfaulkner/act v0.0.0-20201022055632-8cad82044ae0/go.mod h1:7UoZsF7h0nM0ep7l8ZmiyBFbMwAomT7hSgFVtp7R1fc=
+github.com/kpfaulkner/azureauth v0.0.0-20200111062925-b24bd72b78bc h1:eHjv5Di7jkeeHZ8118LhY66vdh6LfJaqhdL+itQ/lJ0=
+github.com/kpfaulkner/azureauth v0.0.0-20200111062925-b24bd72b78bc/go.mod h1:Vh0VV1p2qWS1MUAj9DMlpwlf4gekJLHGhIHK+WTufB0=
 github.com/mitchellh/mapstructure v1.1.2 h1:fmNYVwqnSfB9mZU6OS2O6GsXM+wcskZDuKQzvN1EDeE=
 github.com/mitchellh/mapstructure v1.1.2/go.mod h1:FVVH3fgwuzCH5S8UJGiWEs2h04kUh9fWfEaFds41c1Y=
 github.com/nlopes/slack v0.6.0 h1:jt0jxVQGhssx1Ib7naAOZEZcGdtIhTzkP0nopK0AsRA=
