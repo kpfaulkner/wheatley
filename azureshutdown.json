@@ -1,0 +1,9 @@
+{
+  "SubscriptionID": "",
+  "TenantID": "",
+  "ClientID": "",
+  "ClientSecret": "",
+  "AllowedUsersList": [
+    "road.runner", "wyle.e.coyote"
+  ]
+}
