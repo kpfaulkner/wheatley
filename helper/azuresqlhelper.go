@@ -191,7 +191,6 @@ func (ah *AzureSQLHelper) CreateDB(importServerName string, databaseName string)
 	return nil
 }
 
-
 func generateCreateDBURL(subscriptionID string, rgName string, serverName string, databaseName string) string {
 	template := "https://management.azure.com/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Sql/servers/%s/databases/%s?api-version=2017-10-01-preview"
 	url := fmt.Sprintf(template, subscriptionID, rgName, serverName,databaseName)
@@ -203,3 +202,47 @@ func generateCreateDBBody(dbSku string) string {
 	body := fmt.Sprintf(template, dbSku)
 	return body
 }
+
+
+// UpdateSQLFirewall will update a named firewall rule with a new IP address.
+// https://docs.microsoft.com/en-us/rest/api/sql/firewallrules/createorupdate
+func (ah *AzureSQLHelper) UpdateSQLFirewall(subscriptionID string, serverName string, resourceGroup string, firewallRule string, ip string) error {
+
+	// refresh all the tokens!!!
+	err := ah.refreshToken()
+	if err != nil {
+		return err
+	}
+
+	template := "https://management.azure.com/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Sql/servers/%s/firewallRules/%s?api-version=2014-04-01"
+	url := fmt.Sprintf(template, subscriptionID, resourceGroup, serverName, firewallRule)
+	body := generateFirewallBody(ip)
+	client := &http.Client{}
+	req, err := http.NewRequest("PUT", url, strings.NewReader(body))
+	req.Header.Add("Authorization", "Bearer "+ah.currentToken().AccessToken)
+	req.Header.Add("Content-type", "application/json")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Printf("error on put %s\n", err.Error())
+		panic(err)
+	}
+
+	fmt.Printf("status code is %d\n", resp.StatusCode)
+	b, _ := ioutil.ReadAll(resp.Body)
+	fmt.Printf("body is %s\n", string(b))
+
+	// if status begins with 4.... assume failure.
+	if strings.HasPrefix(resp.Status, "4") {
+		return errors.New("unable to modify SQL firewall")
+	}
+
+	return nil
+}
+
+func generateFirewallBody(ip string) string {
+	template := `{"properties": {"endIpAddress": "%s", "startIpAddress": "%s"}}`
+	body := fmt.Sprintf(template, ip, ip)
+	return body
+}
+
