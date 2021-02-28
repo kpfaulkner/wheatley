@@ -246,3 +246,33 @@ func generateFirewallBody(ip string) string {
 	return body
 }
 
+// DoesSQLFirewallRuleExist Checks if firewall rule exists.
+// https://docs.microsoft.com/en-us/rest/api/sql/firewallrules/get
+func (ah *AzureSQLHelper) DoesSQLFirewallRuleExist(subscriptionID string, serverName string, resourceGroup string, firewallRule string) bool {
+
+	// refresh all the tokens!!!
+	err := ah.refreshToken()
+	if err != nil {
+		return false
+	}
+
+	template := "https://management.azure.com/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Sql/servers/%s/firewallRules/%s?api-version=2014-04-01"
+	url := fmt.Sprintf(template, subscriptionID, resourceGroup, serverName, firewallRule)
+
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", url, nil)
+	req.Header.Add("Authorization", "Bearer "+ah.currentToken().AccessToken)
+	req.Header.Add("Content-type", "application/json")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Printf("error on get %s\n", err.Error())
+		panic(err)
+	}
+
+	// if 200, then rule exists.
+	return resp.StatusCode == http.StatusOK
+}
+
+
+
