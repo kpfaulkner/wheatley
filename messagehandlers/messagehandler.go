@@ -3,6 +3,8 @@ package messagehandlers
 import (
 	"fmt"
 	"github.com/slack-go/slack"
+	"strings"
+	"time"
 )
 
 const (
@@ -70,7 +72,14 @@ func ProcessMessageResponse(msg MessageResponse, channel string, api *slack.Clie
 	switch msg.GetMessageResponseType() {
 	case TextMessageType:
 		textMessage := msg.(TextMessageResponse)
-		rtm.SendMessage(rtm.NewOutgoingMessage(textMessage.Message, channel))
+		sp := strings.Split(textMessage.Message, "\n")
+
+		// slows things down.. but stops being blocked by Slack.
+		// If we send responses > 5000 bytes, then Slack will also block it.
+		for _, line := range sp {
+			rtm.SendMessage(rtm.NewOutgoingMessage(line,channel))
+			<-time.After(2 * time.Second)
+		}
 
 	case FileMessageType:
 		fileMessage := msg.(FileMessageResponse)
