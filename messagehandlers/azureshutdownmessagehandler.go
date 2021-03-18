@@ -62,7 +62,7 @@ func (as *AzureShutdownMessageHandler) shutdownEnv(env string, rg string) error 
 
 // ParseMessage takes a message, determines what to do
 // return the text that should go to the user.
-func (as *AzureShutdownMessageHandler) ParseMessage(msg string, user string) (string, error) {
+func (as *AzureShutdownMessageHandler) ParseMessage(msg string, user string) (MessageResponse, error) {
 
 	shutdownPerf2Regex := regexp.MustCompile(`^shutdown (.*) in rg (.*)$`)
 	soundOffRegex := regexp.MustCompile(`sound off`)
@@ -78,19 +78,19 @@ func (as *AzureShutdownMessageHandler) ParseMessage(msg string, user string) (st
 			rg := strings.ToLower(res[2])
 			err := as.shutdownEnv(env, rg)
 			if err != nil {
-				return fmt.Sprintf("env %s being shutdown", env), nil
+				return NewTextMessageResponse(fmt.Sprintf("env %s being shutdown", env)), nil
 			}
 		}
 
-		return "Please check your query... if you think it's right... complain to Ken.", nil
+		return NewTextMessageResponse("Please check your query... if you think it's right... complain to Ken."), nil
 
 	case soundOffRegex.MatchString(msg):
-		return "AzureShutdownMessageHandler reporting for duty", nil
+		return NewTextMessageResponse("AzureShutdownMessageHandler reporting for duty"), nil
 
 	case helpRegex.MatchString(msg):
-		return "shutdown <env> in rg <rg> : will shutdown the cloud services for the given env (alias) in a particular resource group", nil
+		return NewTextMessageResponse("shutdown <env> in rg <rg> : will shutdown the cloud services for the given env (alias) in a particular resource group"), nil
 
 	}
-	return "", errors.New("No match")
+	return NewTextMessageResponse(""), errors.New("No match")
 
 }

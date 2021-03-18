@@ -55,7 +55,7 @@ func loadAzureCostsConfig(configFileName string) (*AzureCostsConfig, error) {
 
 // ParseMessage takes a message, determines what to do
 // return the text that should go to the user.
-func (ss *AzureCostsMessageHandler) ParseMessage(msg string, user string) (string, error) {
+func (ss *AzureCostsMessageHandler) ParseMessage(msg string, user string) (MessageResponse, error) {
 
 	reportAzureCostsRegex := regexp.MustCompile(`^report azurecosts from (.*) to (.*)$`)
 	reportAzureCostsForRGRegex := regexp.MustCompile(`^report azurecosts with prefix (.*) from (.*) to (.*)$`)
@@ -74,18 +74,18 @@ func (ss *AzureCostsMessageHandler) ParseMessage(msg string, user string) (strin
 			layout := "2006-01-02"
 			startDate, err := time.Parse(layout, startDateStr)
 			if err != nil {
-				return "Start date should be in YYYY-MM-DD format", nil
+				return NewTextMessageResponse("Start date should be in YYYY-MM-DD format"), nil
 			}
 			endDate, err := time.Parse(layout, endDateStr)
 			if err != nil {
-				return "End date should be in YYYY-MM-DD format", nil
+				return NewTextMessageResponse("End date should be in YYYY-MM-DD format"), nil
 			}
 
 			ac := helper.NewAzureCost(ss.config.TenantID, ss.config.ClientID, ss.config.ClientSecret)
 			subCosts, err := ac.GenerateSubscriptionCostDetails(ss.config.Subscriptions, startDate, endDate)
 			if err != nil {
 				fmt.Printf("Error generating sub costs %s\n", err.Error())
-				return "Unable to generate subscription costs.", nil
+				return NewTextMessageResponse("Unable to generate subscription costs."), nil
 			}
 
 			subTotals := []string{}
@@ -95,10 +95,10 @@ func (ss *AzureCostsMessageHandler) ParseMessage(msg string, user string) (strin
 				total += sc.Total
 			}
 			subTotals = append(subTotals, fmt.Sprintf("TOTAL is %0.2f", total))
-			return strings.Join(subTotals, "\n"), nil
+			return NewTextMessageResponse(strings.Join(subTotals, "\n")), nil
 		}
 
-		return "Please check your query... if you think it's right... complain to Ken.", nil
+		return NewTextMessageResponse("Please check your query... if you think it's right... complain to Ken."), nil
 
 	case reportAzureCostsForRGRegex.MatchString(msg):
 		res := reportAzureCostsForRGRegex.FindStringSubmatch(msg)
@@ -110,18 +110,18 @@ func (ss *AzureCostsMessageHandler) ParseMessage(msg string, user string) (strin
 			layout := "2006-01-02"
 			startDate, err := time.Parse(layout, startDateStr)
 			if err != nil {
-				return "Start date should be in YYYY-MM-DD format", nil
+				return NewTextMessageResponse("Start date should be in YYYY-MM-DD format"), nil
 			}
 			endDate, err := time.Parse(layout, endDateStr)
 			if err != nil {
-				return "End date should be in YYYY-MM-DD format", nil
+				return NewTextMessageResponse("End date should be in YYYY-MM-DD format"), nil
 			}
 
 			ac := helper.NewAzureCost(ss.config.TenantID, ss.config.ClientID, ss.config.ClientSecret)
 			subCosts, err := ac.GenerateSubscriptionCostDetails(ss.config.Subscriptions, startDate, endDate)
 			if err != nil {
 				fmt.Printf("Error generating sub costs %s\n", err.Error())
-				return "Unable to generate subscription costs.", nil
+				return NewTextMessageResponse("Unable to generate subscription costs."), nil
 			}
 
 			subTotals := []string{}
@@ -134,7 +134,7 @@ func (ss *AzureCostsMessageHandler) ParseMessage(msg string, user string) (strin
 			// just prefix data
 			prefixCosts, err := helper.GetCostsPerRGPrefix([]string{prefix}, subCosts)
 			if err != nil {
-				return "Unable to get costs for prefix", nil
+				return NewTextMessageResponse("Unable to get costs for prefix"), nil
 			}
 
 			for prefix, cost := range prefixCosts {
@@ -142,15 +142,15 @@ func (ss *AzureCostsMessageHandler) ParseMessage(msg string, user string) (strin
 			}
 
 			subTotals = append(subTotals, fmt.Sprintf("TOTAL is %0.2f", total))
-			return strings.Join(subTotals, "\n"), nil
+			return NewTextMessageResponse(strings.Join(subTotals, "\n")), nil
 		}
 	case soundOffRegex.MatchString(msg):
-		return "AzureCostsMessageHandler reporting for duty", nil
+		return NewTextMessageResponse("AzureCostsMessageHandler reporting for duty"), nil
 
 	case helpRegex.MatchString(msg):
-		return "report azurecosts from <YYYY-MM-DD> to <YYYY-MM-DD> : Gives costings between the 2 dates. Splits into pre-defined groups.", nil
+		return NewTextMessageResponse("report azurecosts from <YYYY-MM-DD> to <YYYY-MM-DD> : Gives costings between the 2 dates. Splits into pre-defined groups."), nil
 
 	}
-	return "", errors.New("No match")
+	return NewTextMessageResponse(""), errors.New("No match")
 
 }

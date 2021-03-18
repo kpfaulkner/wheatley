@@ -16,7 +16,7 @@ func NewMiscMessageHandler() *MiscMessageHandler {
 
 // ParseMessage takes a message, determines what to do
 // return the text that should go to the user.
-func (sg *MiscMessageHandler) ParseMessage(msg string, user string) (string, error) {
+func (sg *MiscMessageHandler) ParseMessage(msg string, user string) (MessageResponse, error) {
 
 	haskellRegex := regexp.MustCompile(`.*haskell.*`)
 	signOfLifeRegex := regexp.MustCompile(`hello`)
@@ -24,14 +24,14 @@ func (sg *MiscMessageHandler) ParseMessage(msg string, user string) (string, err
 
 	switch {
 	case signOfLifeRegex.MatchString(msg):
-		return "alive and well", nil
+		return NewTextMessageResponse("alive and well"), nil
 
 	case haskellRegex.MatchString(msg):
-		return ".... haskell... don't get me started!!!", nil
+		return NewTextMessageResponse(".... haskell... don't get me started!!!"), nil
 
 	case soundOffRegex.MatchString(msg):
-		return "MiscMessageHandler reporting for duty ", nil
+		return NewTextMessageResponse("MiscMessageHandler reporting for duty "), nil
 	}
 
-	return "", errors.New("No match")
+	return NewTextMessageResponse(""), errors.New("No match")
 }

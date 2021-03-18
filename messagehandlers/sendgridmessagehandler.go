@@ -50,7 +50,7 @@ func (sg *SendgridMessageHandler) checkEmail(emailAddr string) (string, error) {
 
 // ParseMessage takes a message, determines what to do
 // return the text that should go to the user.
-func (sg *SendgridMessageHandler) ParseMessage(msg string, user string) (string, error) {
+func (sg *SendgridMessageHandler) ParseMessage(msg string, user string) (MessageResponse, error) {
 
 	checkEmailRegex := regexp.MustCompile(`check <mailto:(.*)\|(.*)> email`)
 	checkDebounceRegex := regexp.MustCompile(`debounce <mailto:(.*)\|(.*)> email`)
@@ -64,7 +64,7 @@ func (sg *SendgridMessageHandler) ParseMessage(msg string, user string) (string,
 		res := checkEmailRegex.FindStringSubmatch(msg)
 		if res != nil {
 			msg, _ := sg.checkEmail(res[2])
-			return msg, nil
+			return NewTextMessageResponse(msg), nil
 		}
 
 	case checkDebounceRegex.MatchString(msg):
@@ -72,10 +72,10 @@ func (sg *SendgridMessageHandler) ParseMessage(msg string, user string) (string,
 		if res != nil {
 			err := sg.Handler.DeleteBounce(res[2])
 			if err != nil {
-				return "unable to debounce", nil
+				return NewTextMessageResponse("unable to debounce"), nil
 			}
 
-			return "debounced", nil
+			return NewTextMessageResponse("debounced"), nil
 		}
 
 	case checkDeblockRegex.MatchString(msg):
@@ -83,10 +83,10 @@ func (sg *SendgridMessageHandler) ParseMessage(msg string, user string) (string,
 		if res != nil {
 			err := sg.Handler.DeleteBlock(res[2])
 			if err != nil {
-				return "unable to deblock", nil
+				return NewTextMessageResponse("unable to deblock"), nil
 			}
 
-			return "deblocked", nil
+			return NewTextMessageResponse("deblocked"), nil
 		}
 
 	case checkRemoveSpamRegex.MatchString(msg):
@@ -94,10 +94,10 @@ func (sg *SendgridMessageHandler) ParseMessage(msg string, user string) (string,
 		if res != nil {
 			err := sg.Handler.DeleteSpam(res[2])
 			if err != nil {
-				return "unable to de spam...", nil
+				return NewTextMessageResponse("unable to de spam..."), nil
 			}
 
-			return "despammed", nil
+			return NewTextMessageResponse("despammed"), nil
 		}
 
 	case checkRemoveInvalidRegex.MatchString(msg):
@@ -105,16 +105,16 @@ func (sg *SendgridMessageHandler) ParseMessage(msg string, user string) (string,
 		if res != nil {
 			err := sg.Handler.DeleteSpam(res[2])
 			if err != nil {
-				return "unable to remove invalid..", nil
+				return NewTextMessageResponse("unable to remove invalid.."), nil
 			}
 
-			return "de-invalidateded ;)", nil
+			return NewTextMessageResponse("de-invalidateded ;)"), nil
 		}
 
 	case soundOffRegex.MatchString(msg):
-		return "SendgridMessageHandler reporting for duty", nil
+		return NewTextMessageResponse("SendgridMessageHandler reporting for duty"), nil
 
 	}
-	return "", errors.New("No match")
+	return NewTextMessageResponse(""), errors.New("No match")
 
 }

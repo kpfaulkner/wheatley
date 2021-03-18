@@ -50,7 +50,7 @@ func parseServiceBusResults(res *helper.ServiceBusResponse, onlyActive bool) str
 
 // ParseMessage takes a message, determines what to do
 // return the text that should go to the user.
-func (sb *ServiceBusMessageHandler) ParseMessage(msg string, user string) (string, error) {
+func (sb *ServiceBusMessageHandler) ParseMessage(msg string, user string) (MessageResponse, error) {
 
 	soundOffRegex := regexp.MustCompile(`sound off`)
 	checkQueueMessageCountRegex := regexp.MustCompile(`sb check queue(.*)`)
@@ -61,7 +61,7 @@ func (sb *ServiceBusMessageHandler) ParseMessage(msg string, user string) (strin
 
 	switch {
 	case soundOffRegex.MatchString(msg):
-		return "ServiceBusMessageHandler reporting for duty", nil
+		return NewTextMessageResponse("ServiceBusMessageHandler reporting for duty"), nil
 
 	case checkQueueMessageCountRegex.MatchString(msg):
 		fmt.Printf("\n\nQUEUE CHECK\n\n")
@@ -72,7 +72,7 @@ func (sb *ServiceBusMessageHandler) ParseMessage(msg string, user string) (strin
 			returnString = parseServiceBusResults(&results, false)
 		}
 
-		return returnString, nil
+		return NewTextMessageResponse(returnString), nil
 
 	case checkTopicMessageCountRegex.MatchString(msg):
 		fmt.Printf("\n\nTOPIC CHECK\n\n")
@@ -84,7 +84,7 @@ func (sb *ServiceBusMessageHandler) ParseMessage(msg string, user string) (strin
 			returnString = parseServiceBusResults(&results, false)
 		}
 
-		return returnString, nil
+		return NewTextMessageResponse(returnString), nil
 
 	case checkActiveQueueMessageCountRegex.MatchString(msg):
 		fmt.Printf("\n\nACTIVE QUEUE CHECK\n\n")
@@ -95,7 +95,7 @@ func (sb *ServiceBusMessageHandler) ParseMessage(msg string, user string) (strin
 			returnString = parseServiceBusResults(&results, true)
 		}
 
-		return returnString, nil
+		return NewTextMessageResponse(returnString), nil
 
 	case checkActiveTopicMessageCountRegex.MatchString(msg):
 		fmt.Printf("\n\nnACTIVE TOPIC CHECK\n\n")
@@ -107,9 +107,9 @@ func (sb *ServiceBusMessageHandler) ParseMessage(msg string, user string) (strin
 			returnString = parseServiceBusResults(&results, true)
 		}
 
-		return returnString, nil
+		return NewTextMessageResponse(returnString), nil
 
 	}
 
-	return "", errors.New("No match")
+	return NewTextMessageResponse(""), errors.New("No match")
 }

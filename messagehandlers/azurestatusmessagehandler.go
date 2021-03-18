@@ -87,7 +87,7 @@ func (ss *AzureStatusMessageHandler) checkEnv(env string, minsToCheck int) (stri
 
 // ParseMessage takes a message, determines what to do
 // return the text that should go to the user.
-func (ss *AzureStatusMessageHandler) ParseMessage(msg string, user string) (string, error) {
+func (ss *AzureStatusMessageHandler) ParseMessage(msg string, user string) (MessageResponse, error) {
 
 	checkAzureStatusRegex := regexp.MustCompile(`^check (.*)`)
 	checkAzureStatusLastRegex := regexp.MustCompile(`^check (.*?) last (.*?) min`)
@@ -105,16 +105,16 @@ func (ss *AzureStatusMessageHandler) ParseMessage(msg string, user string) (stri
 
 				minsCheck,err := strconv.Atoi(res[2])
 				if err != nil || minsCheck < 5 || minsCheck > 60 {
-					return "not a valid number... please pick something between 5 and 60", nil
+					return NewTextMessageResponse("not a valid number... please pick something between 5 and 60"), nil
 				}
 				answer, err := ss.checkEnv(res[1], minsCheck)
 				if err != nil {
-					return "unable to get answer", nil
+					return NewTextMessageResponse("unable to get answer"), nil
 				}
-				return answer, nil
+				return NewTextMessageResponse(answer), nil
 			}
 
-			return "Please check your query... if you think it's right... complain to Ken.", nil
+			return NewTextMessageResponse("Please check your query... if you think it's right... complain to Ken."), nil
 		}
 
 	case checkAzureStatusRegex.MatchString(msg):
@@ -124,21 +124,21 @@ func (ss *AzureStatusMessageHandler) ParseMessage(msg string, user string) (stri
 			if env == "test" || env == "prod" {
 				answer, err := ss.checkEnv(res[1], 5)
 				if err != nil {
-					return "unable to get answer", nil
+					return NewTextMessageResponse("unable to get answer"), nil
 				}
-				return answer, nil
+				return NewTextMessageResponse(answer), nil
 			}
 
-			return "Please check your query... if you think it's right... complain to Ken.", nil
+			return NewTextMessageResponse("Please check your query... if you think it's right... complain to Ken."), nil
 		}
 
 	case soundOffRegex.MatchString(msg):
-		return "ServerStatusMessageHandler reporting for duty", nil
+		return NewTextMessageResponse("ServerStatusMessageHandler reporting for duty"), nil
 
 	case helpRegex.MatchString(msg):
-		return "check <test|prod>  : gives details about test/prod env.\ncheck <test/prod> last <n> mins : will check env for last n mins, where 5<= n <= 60", nil
+		return NewTextMessageResponse("check <test|prod>  : gives details about test/prod env.\ncheck <test/prod> last <n> mins : will check env for last n mins, where 5<= n <= 60"), nil
 
 	}
-	return "", errors.New("No match")
+	return NewTextMessageResponse(""), errors.New("No match")
 
 }

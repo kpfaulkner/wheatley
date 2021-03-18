@@ -43,7 +43,7 @@ func (ss *ServerStatusMessageHandler) doesEnvExist( env string ) bool {
 
 // ParseMessage takes a message, determines what to do
 // return the text that should go to the user.
-func (ss *ServerStatusMessageHandler) ParseMessage(msg string, user string) (string, error) {
+func (ss *ServerStatusMessageHandler) ParseMessage(msg string, user string) (MessageResponse, error) {
 
 	addStatusRegex := regexp.MustCompile(`^env (.*) is (.*)`)
 	envStatusRegex := regexp.MustCompile(`^env (.*)`)
@@ -60,9 +60,9 @@ func (ss *ServerStatusMessageHandler) ParseMessage(msg string, user string) (str
 			lowerEnv := strings.ToLower(res[1])
 			if ss.doesEnvExist(lowerEnv) {
 				ss.state.UpdateState(lowerEnv, user, res[2])
-				return "if you say so", nil
+				return NewTextMessageResponse("if you say so"), nil
 			} else {
-				return "don't know about the env.... " + lowerEnv, nil
+				return NewTextMessageResponse("don't know about the env.... "+ lowerEnv), nil
 			}
 		}
 
@@ -71,7 +71,7 @@ func (ss *ServerStatusMessageHandler) ParseMessage(msg string, user string) (str
 		if res != nil {
 			envs, err := ss.state.ListEnvs()
 			if err != nil {
-				return "something went boom...... sorry", nil
+				return NewTextMessageResponse("something went boom...... sorry"), nil
 			}
 
 			combinedStatus := []string{}
@@ -85,7 +85,7 @@ func (ss *ServerStatusMessageHandler) ParseMessage(msg string, user string) (str
 				combinedStatus = append( combinedStatus, stateForEnv)
 			}
 
-			return strings.Join(combinedStatus, "\n"), nil
+			return NewTextMessageResponse(strings.Join(combinedStatus, "\n")), nil
 		}
 
 	case listEnvsRegex.MatchString(msg):
@@ -93,9 +93,9 @@ func (ss *ServerStatusMessageHandler) ParseMessage(msg string, user string) (str
 		if res != nil {
 			envs, err := ss.state.ListEnvs()
 			if err != nil {
-				return "unable to list envs... something went bang...", nil
+				return NewTextMessageResponse("unable to list envs... something went bang..."), nil
 			}
-			return strings.Join(envs, ","), nil
+			return NewTextMessageResponse(strings.Join(envs, ",")), nil
 		}
 
 	case helpRegex.MatchString(msg):
@@ -104,7 +104,7 @@ func (ss *ServerStatusMessageHandler) ParseMessage(msg string, user string) (str
 			               "get env status:       env <env name>",
 			               "all env summary:    env summary"}
 
-		return strings.Join(help, "\n"), nil
+		return NewTextMessageResponse(strings.Join(help, "\n")), nil
 
 	case envStatusRegex.MatchString(msg):
 		res := envStatusRegex.FindStringSubmatch(msg)
@@ -113,11 +113,11 @@ func (ss *ServerStatusMessageHandler) ParseMessage(msg string, user string) (str
 			env, err := ss.state.FindEnv(lowerEnv)
 			if err != nil {
 				// unable to find state.....  just tell the user cant do it.
-				return "unable to find env....  ", nil
+				return NewTextMessageResponse("unable to find env....  "), nil
 			}
 
 			response := generateEnvStateMessageString( env.Timestamp,env.Reporter, env.Name, env.State)
-			return response, nil
+			return NewTextMessageResponse(response), nil
 		}
 
 	case checkStatusRegex.MatchString(msg):
@@ -132,13 +132,13 @@ func (ss *ServerStatusMessageHandler) ParseMessage(msg string, user string) (str
 			*/
 
 
-			return "deblocked", nil
+			return NewTextMessageResponse("deblocked"), nil
 		}
 
 	case soundOffRegex.MatchString(msg):
-		return "ServerStatusMessageHandler reporting for duty", nil
+		return NewTextMessageResponse("ServerStatusMessageHandler reporting for duty"), nil
 
 	}
-	return "", errors.New("No match")
+	return NewTextMessageResponse(""), errors.New("No match")
 
 }

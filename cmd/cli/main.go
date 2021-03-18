@@ -42,9 +42,9 @@ func main() {
 						// error.....  die a mysterious death..
 						return
 					}
-
 					msg, _ := h.ParseMessage(text, u.Name)
-					grRtm.SendMessage(grRtm.NewOutgoingMessage(msg, ev.Channel))
+					messagehandlers.ProcessMessageResponse(msg,ev.Channel, api, grRtm)
+					//grRtm.SendMessage(grRtm.NewOutgoingMessage(msg, ev.Channel))
 				}(ev.Text, ev.User, rtm, handler)
 
 			}

@@ -81,7 +81,7 @@ func userAllowed(user string, allowedUsers []string) bool {
 
 // ParseMessage takes a message, determines what to do
 // return the text that should go to the user.
-func (ss *DatabaseBackupMessageHandler) ParseMessage(msg string, user string) (string, error) {
+func (ss *DatabaseBackupMessageHandler) ParseMessage(msg string, user string) (MessageResponse, error) {
 
 	// cant be arsed extracting out term.
 
@@ -97,25 +97,25 @@ func (ss *DatabaseBackupMessageHandler) ParseMessage(msg string, user string) (s
 		if res != nil {
 
 			if !userAllowed(user, ss.config.AllowedUsersList) {
-				return "Sorry not permitted to do this.", nil
+				return NewTextMessageResponse("Sorry not permitted to do this."), nil
 			}
 
 			backupName := fmt.Sprintf("%s-%s.bacpac", ss.config.BackupPrefix, time.Now().Format("2006-01-02"))
 			err := ss.asHelper.StartDBExport(ss.config.ExportServerName, ss.config.DatabaseName, backupName)
 			if err != nil {
-				return "Cannot backup database!!\n", nil
+				return NewTextMessageResponse("Cannot backup database!!\n"), nil
 			}
 
-			return "Have started backup. There is no indication of when it will complete though.", nil
+			return NewTextMessageResponse("Have started backup. There is no indication of when it will complete though."), nil
 		}
 
 	case soundOffRegex.MatchString(msg):
-		return "DatabaseBackupMessageHandler reporting for duty", nil
+		return NewTextMessageResponse("DatabaseBackupMessageHandler reporting for duty"), nil
 
 	case helpRegex.MatchString(msg):
-		return "backup prod: Starts backing up production database to blob storage.", nil
+		return NewTextMessageResponse("backup prod: Starts backing up production database to blob storage."), nil
 
 	}
-	return "", errors.New("No match")
+	return NewTextMessageResponse(""), errors.New("No match")
 
 }

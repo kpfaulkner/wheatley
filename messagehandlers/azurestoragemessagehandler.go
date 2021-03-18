@@ -44,10 +44,10 @@ func generateRegexps(azureQueries map[string]string) map[*regexp.Regexp]string {
 
 // ParseMessage takes a message, determines what to do
 // return the text that should go to the user.
-func (sg *AzureStorageMessageHandler) ParseMessage(msg string, user string) (string, error) {
+func (sg *AzureStorageMessageHandler) ParseMessage(msg string, user string) (MessageResponse, error) {
 
 	fmt.Printf("msg is %s", msg)
 
-	return "", errors.New("No match")
+	return NewTextMessageResponse(""), errors.New("No match")
 
 }
