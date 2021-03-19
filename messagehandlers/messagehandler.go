@@ -87,7 +87,8 @@ func ProcessMessageResponse(msg MessageResponse, channel string, api *slack.Clie
 		params := slack.FileUploadParameters{
 			Title: fileMessage.Title,
 			Filetype: fileMessage.FileType,
-			File: fileMessage.FileName,
+			//File: fileMessage.FileName,
+			Filename: fileMessage.FileName,
 			Content:  string(fileMessage.Contents),   // should fileMesage.Contents just be string to begin with?
 		}
 
@@ -97,9 +98,7 @@ func ProcessMessageResponse(msg MessageResponse, channel string, api *slack.Clie
 			return err
 		}
 		fmt.Printf("Name: %s, URL: %s\n", file.Name, file.URLPrivateDownload)
-		rtm.SendMessage(rtm.NewOutgoingMessage( fmt.Sprintf("file %s is at %s", file.Name, file.URLPrivateDownload), channel))
 		rtm.SendMessage(rtm.NewOutgoingMessage( fmt.Sprintf("file %s is at %s", file.Name, file.Permalink), channel))
-		rtm.SendMessage(rtm.NewOutgoingMessage( fmt.Sprintf("file %s is at %s", file.Name, file.PermalinkPublic), channel))
 
 	}
 	return nil
