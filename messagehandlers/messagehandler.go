@@ -91,7 +91,6 @@ func ProcessMessageResponse(msg MessageResponse, channel string, api *slack.Clie
 			Content:  string(fileMessage.Contents),   // should fileMesage.Contents just be string to begin with?
 		}
 
-		api.UploadFile()
 		file, err := api.UploadFile(params)
 		if err != nil {
 			fmt.Printf("%s\n", err)
