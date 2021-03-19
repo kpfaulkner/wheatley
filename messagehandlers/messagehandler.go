@@ -91,6 +91,7 @@ func ProcessMessageResponse(msg MessageResponse, channel string, api *slack.Clie
 			Content:  string(fileMessage.Contents),   // should fileMesage.Contents just be string to begin with?
 		}
 
+		api.UploadFile()
 		file, err := api.UploadFile(params)
 		if err != nil {
 			fmt.Printf("%s\n", err)
@@ -98,7 +99,9 @@ func ProcessMessageResponse(msg MessageResponse, channel string, api *slack.Clie
 		}
 		fmt.Printf("Name: %s, URL: %s\n", file.Name, file.URLPrivateDownload)
 		rtm.SendMessage(rtm.NewOutgoingMessage( fmt.Sprintf("file %s is at %s", file.Name, file.URLPrivateDownload), channel))
-		rtm.SendMessage(rtm.NewOutgoingMessage( fmt.Sprintf("file %s is at %s", file.Name, file.URLDownload), channel))
+		rtm.SendMessage(rtm.NewOutgoingMessage( fmt.Sprintf("file %s is at %s", file.Name, file.Permalink), channel))
+		rtm.SendMessage(rtm.NewOutgoingMessage( fmt.Sprintf("file %s is at %s", file.Name, file.PermalinkPublic), channel))
+
 	}
 	return nil
 }
