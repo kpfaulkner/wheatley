@@ -96,8 +96,8 @@ func ProcessMessageResponse(msg MessageResponse, channel string, api *slack.Clie
 			fmt.Printf("%s\n", err)
 			return err
 		}
-		fmt.Printf("Name: %s, URL: %s\n", file.Name, file.URL)
-		rtm.SendMessage(rtm.NewOutgoingMessage( fmt.Sprintf("file %s is at %s", file.Name, file.URL), channel))
+		fmt.Printf("Name: %s, URL: %s\n", file.Name, file.URLPrivateDownload)
+		rtm.SendMessage(rtm.NewOutgoingMessage( fmt.Sprintf("file %s is at %s", file.Name, file.URLPrivateDownload), channel))
 	}
 	return nil
 }
