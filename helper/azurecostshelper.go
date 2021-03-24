@@ -11,8 +11,8 @@ import (
 )
 
 type SubscriptionCosts struct {
-	SubscriptionID string
-	Total float64 // total for subscription, not really concerted about using floats here.
+	SubscriptionID     string
+	Total              float64 // total for subscription, not really concerted about using floats here.
 	ResourceGroupCosts map[string]float64
 }
 
@@ -36,7 +36,7 @@ type DailyBillingDetails struct {
 		InstanceName            string      `json:"instanceName"`
 		InstanceLocation        string      `json:"instanceLocation"`
 		MeterID                 string      `json:"meterId"`
-		UsageQuantity           float64         `json:"usageQuantity"`
+		UsageQuantity           float64     `json:"usageQuantity"`
 		PretaxCost              float64     `json:"pretaxCost"`
 		Currency                string      `json:"currency"`
 		IsEstimated             bool        `json:"isEstimated"`
@@ -53,16 +53,16 @@ type DailyBillingDetails struct {
 }
 
 type BillingResponse struct {
-	NextLink string `json:"nextLink"`
-	Value []DailyBillingDetails `json:"value"`
+	NextLink string                `json:"nextLink"`
+	Value    []DailyBillingDetails `json:"value"`
 }
 
 type AzureCost struct {
-	azureAuth *AzureAuth
+	azureAuth      *AzureAuth
 	subscriptionID string
-	tenantID string
-	clientID string
-	clientSecret string
+	tenantID       string
+	clientID       string
+	clientSecret   string
 }
 
 func NewAzureCost(tenantID string, clientID string, clientSecret string) AzureCost {
@@ -76,13 +76,12 @@ func NewAzureCost(tenantID string, clientID string, clientSecret string) AzureCo
 }
 
 // just testing out ideas....   naming rocks.
-func (ac *AzureCost) GetAllBillingForSubscriptionID( subscriptionID string, startDate time.Time, endDate time.Time) ([]DailyBillingDetails, error) {
+func (ac *AzureCost) GetAllBillingForSubscriptionID(subscriptionID string, startDate time.Time, endDate time.Time) ([]DailyBillingDetails, error) {
 	err := ac.azureAuth.RefreshToken()
 	if err != nil {
 		fmt.Printf("unable to refresh token: %s\n", err.Error())
 		return nil, err
 	}
-
 
 	// taken from https://docs.microsoft.com/en-us/azure/cost-management-billing/costs/quick-acm-cost-analysis   unsure if works yet
 	// https://management.azure.com/{scope}/providers/Microsoft.Consumption/usageDetails?metric=AmortizedCost&$filter=properties/usageStart+ge+'2019-04-01'+AND+properties/usageEnd+le+'2019-04-30'&api-version=2019-04-01-preview
@@ -95,7 +94,7 @@ func (ac *AzureCost) GetAllBillingForSubscriptionID( subscriptionID string, star
 	billingDetails := []DailyBillingDetails{}
 	for !done {
 		// replace spaces with +.... should call proper encode...
-		url = strings.Replace(url, " ", "+",-1)
+		url = strings.Replace(url, " ", "+", -1)
 		request, err := http.NewRequest("GET", url, nil)
 		if err != nil {
 			fmt.Printf("couldn't generate HTTP request %s\n", err.Error())
@@ -103,7 +102,7 @@ func (ac *AzureCost) GetAllBillingForSubscriptionID( subscriptionID string, star
 		}
 
 		// yes, 5 minute timeout....   getting costs can really take a while :/
-		client := http.Client{ Timeout: 300 * time.Second}
+		client := http.Client{Timeout: 300 * time.Second}
 		request.Header.Set("Authorization", "Bearer "+ac.azureAuth.CurrentToken().AccessToken)
 		resp, err := client.Do(request)
 		if err != nil {
@@ -133,14 +132,14 @@ func (ac *AzureCost) GetAllBillingForSubscriptionID( subscriptionID string, star
 	return billingDetails, nil
 }
 
-func CalculateCostsPerResourceGroup( data []DailyBillingDetails) (map[string]float64, float64,  error) {
+func CalculateCostsPerResourceGroup(data []DailyBillingDetails) (map[string]float64, float64, error) {
 	resourceGroupCosting := make(map[string]float64)
 
 	total := 0.0
 	for _, costDetails := range data {
 
 		sp := strings.Split(costDetails.Properties.InstanceID, "/")
-		rg := strings.ToLower(sp[4])  // just deal with lowercase.
+		rg := strings.ToLower(sp[4]) // just deal with lowercase.
 
 		// default value is 0.0 :)
 		cost, _ := resourceGroupCosting[rg]
@@ -153,20 +152,20 @@ func CalculateCostsPerResourceGroup( data []DailyBillingDetails) (map[string]flo
 	return resourceGroupCosting, total, nil
 }
 
-func (ac *AzureCost) GenerateSubscriptionCostDetails( subscriptionIDs []string, startDate time.Time, endDate time.Time) ([]SubscriptionCosts, error) {
+func (ac *AzureCost) GenerateSubscriptionCostDetails(subscriptionIDs []string, startDate time.Time, endDate time.Time) ([]SubscriptionCosts, error) {
 
 	subscriptionCosts := []SubscriptionCosts{}
 
 	// for this simple case, just lock it.
-  var lock sync.Mutex
-  var wg sync.WaitGroup
+	var lock sync.Mutex
+	var wg sync.WaitGroup
 
 	for _, subscriptionID := range subscriptionIDs {
 		sId := subscriptionID
 		start := startDate
 		end := endDate
 		wg.Add(1)
-		go func( subID string, sDate time.Time, eDate time.Time) {
+		go func(subID string, sDate time.Time, eDate time.Time) {
 			data, err := ac.GetAllBillingForSubscriptionID(subID, sDate, eDate)
 			if err != nil {
 				return
@@ -186,7 +185,7 @@ func (ac *AzureCost) GenerateSubscriptionCostDetails( subscriptionIDs []string, 
 			subscriptionCosts = append(subscriptionCosts, sc)
 			lock.Unlock()
 			wg.Done()
-		}( sId, start, end)
+		}(sId, start, end)
 	}
 
 	wg.Wait()
@@ -194,7 +193,7 @@ func (ac *AzureCost) GenerateSubscriptionCostDetails( subscriptionIDs []string, 
 	return subscriptionCosts, nil
 }
 
-func (ac *AzureCost) GenerateSubscriptionCostDetailsSequential( subscriptionIDs []string, startDate time.Time, endDate time.Time) ([]SubscriptionCosts, error) {
+func (ac *AzureCost) GenerateSubscriptionCostDetailsSequential(subscriptionIDs []string, startDate time.Time, endDate time.Time) ([]SubscriptionCosts, error) {
 
 	subscriptionCosts := []SubscriptionCosts{}
 
@@ -223,13 +222,13 @@ func (ac *AzureCost) GenerateSubscriptionCostDetailsSequential( subscriptionIDs 
 // particular prefixes are met.
 // ie, will search for RG prefixes of "test-" for the testenv etc.
 // Simply return a map of prefix and total for RGs matching that prefix.
-func GetCostsPerRGPrefix( wantedPrefixes []string, allData []SubscriptionCosts ) (map[string]float64, error) {
+func GetCostsPerRGPrefix(wantedPrefixes []string, allData []SubscriptionCosts) (map[string]float64, error) {
 
 	prefixData := make(map[string]float64)
 
 	// stupid level of iteration, but will probably be fine...  (<--- famous last words!)
 	for _, sc := range allData {
-		for rg,v := range sc.ResourceGroupCosts {
+		for rg, v := range sc.ResourceGroupCosts {
 			// check if RG name has a prefix we're interested in.
 			for _, prefix := range wantedPrefixes {
 				if strings.HasPrefix(rg, prefix) {
@@ -244,8 +243,8 @@ func GetCostsPerRGPrefix( wantedPrefixes []string, allData []SubscriptionCosts )
 	return prefixData, nil
 }
 
-func contains( key string, l []string) bool {
-	for _,s := range l {
+func contains(key string, l []string) bool {
+	for _, s := range l {
 		if s == key {
 			return true
 		}
@@ -253,12 +252,12 @@ func contains( key string, l []string) bool {
 	return false
 }
 
-func FilterDataBasedOnSubscription( allData []SubscriptionCosts, subIDs []string)  []SubscriptionCosts {
+func FilterDataBasedOnSubscription(allData []SubscriptionCosts, subIDs []string) []SubscriptionCosts {
 
 	data := []SubscriptionCosts{}
 
 	for _, subData := range allData {
-		if contains( subData.SubscriptionID, subIDs) {
+		if contains(subData.SubscriptionID, subIDs) {
 			data = append(data, subData)
 		}
 	}

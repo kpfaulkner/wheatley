@@ -8,20 +8,18 @@ import (
 	"strings"
 )
 
-
-
 type GithubHelper struct {
 	client *github.Client
-  ctx context.Context
-	owner string
-	token string
+	ctx    context.Context
+	owner  string
+	token  string
 }
 
 func NewGithubHelper(owner string, apikey string) *GithubHelper {
 	gh := GithubHelper{}
 	gh.owner = owner
 	gh.token = apikey
-  gh.ctx = context.Background()
+	gh.ctx = context.Background()
 	gh.client = getClient(gh.token)
 	return &gh
 }
@@ -33,19 +31,19 @@ func getClient(token string) *github.Client {
 	)
 	tc := oauth2.NewClient(ctx, ts)
 	client := github.NewClient(tc)
-  return client
+	return client
 }
 
 // GetBranchesForRepo get all pages until all branches returned.
 // Should never be THAT many that this would cause an issue.
 // (watch me eat these words)
-func (gh *GithubHelper) GetBranchesForRepo(repo string) ( []*github.Branch, error) {
+func (gh *GithubHelper) GetBranchesForRepo(repo string) ([]*github.Branch, error) {
 
 	allBranches := []*github.Branch{}
 	done := false
 	page := 0
 	for !done {
-		branches, _, err := gh.client.Repositories.ListBranches(gh.ctx, gh.owner, repo, &github.ListOptions{Page:page, PerPage: 1000})
+		branches, _, err := gh.client.Repositories.ListBranches(gh.ctx, gh.owner, repo, &github.ListOptions{Page: page, PerPage: 1000})
 		if err != nil {
 			fmt.Printf("error %s\n", err.Error())
 			done = true
@@ -64,10 +62,9 @@ func (gh *GithubHelper) GetBranchesForRepo(repo string) ( []*github.Branch, erro
 	return allBranches, nil
 }
 
+func (gh *GithubHelper) GetMergeCommentsBetweenCommits(repo string, commit1 string, commit2 string) ([]string, error) {
 
-func (gh *GithubHelper) GetMergeCommentsBetweenCommits(repo string, commit1 string, commit2 string) ( []string, error) {
-
-	cc, _, err := gh.client.Repositories.CompareCommits(gh.ctx, gh.owner, repo, commit1, commit2 )
+	cc, _, err := gh.client.Repositories.CompareCommits(gh.ctx, gh.owner, repo, commit1, commit2)
 	if err != nil {
 		fmt.Printf("error %s\n", err.Error())
 		return nil, err
@@ -78,10 +75,10 @@ func (gh *GithubHelper) GetMergeCommentsBetweenCommits(repo string, commit1 stri
 		commentSlice = append(commentSlice, *commit.GetCommit().Message)
 	}
 
-	return commentSlice,nil
+	return commentSlice, nil
 }
 
-func (gh *GithubHelper) GetPR(repo string, prID int) ( *github.PullRequest, error) {
+func (gh *GithubHelper) GetPR(repo string, prID int) (*github.PullRequest, error) {
 	pr, _, err := gh.client.PullRequests.Get(gh.ctx, gh.owner, repo, prID)
 	if err != nil {
 		fmt.Printf("error %s\n", err.Error())
@@ -109,10 +106,9 @@ func (gh *GithubHelper) GetIssue(repo string, issueID int) (*github.Issue, error
 	return issue, nil
 }
 
+func (gh *GithubHelper) addLabelToIssue(repo string, id int, label string) error {
 
-func (gh *GithubHelper) addLabelToIssue(repo string,id int, label string) error {
-
-	_,_,err :=gh.client.Issues.AddLabelsToIssue(gh.ctx, gh.owner, repo,id, []string{label})
+	_, _, err := gh.client.Issues.AddLabelsToIssue(gh.ctx, gh.owner, repo, id, []string{label})
 	if err != nil {
 		fmt.Printf("addLabelToIssue error %s\n", err.Error())
 		return err
@@ -120,34 +116,34 @@ func (gh *GithubHelper) addLabelToIssue(repo string,id int, label string) error 
 	return nil
 }
 
-func doesLabelExist( label string, labelList []string) bool {
-	for _,l := range labelList {
+func doesLabelExist(label string, labelList []string) bool {
+	for _, l := range labelList {
 		if strings.ToLower(l) == label {
 			// already attached.  return
 			return true
 		}
 	}
-  return false
+	return false
 }
 
 func (gh *GithubHelper) AddLabelToPR(repo string, prID int, label string) error {
-  pr, err := gh.GetPR(repo, prID)
-  if err != nil {
-  	fmt.Printf("error %s\n", err.Error())
-  	return err
-  }
+	pr, err := gh.GetPR(repo, prID)
+	if err != nil {
+		fmt.Printf("error %s\n", err.Error())
+		return err
+	}
 
-  allLabels := make([]string,len( pr.Labels), len(pr.Labels))
-  for _,l := range pr.Labels {
-  	allLabels = append(allLabels, strings.ToLower(*l.Name))
-  }
+	allLabels := make([]string, len(pr.Labels), len(pr.Labels))
+	for _, l := range pr.Labels {
+		allLabels = append(allLabels, strings.ToLower(*l.Name))
+	}
 
 	lowerLabel := strings.ToLower(label)
-  if !doesLabelExist(lowerLabel, allLabels) {
+	if !doesLabelExist(lowerLabel, allLabels) {
 		gh.addLabelToIssue(repo, prID, label)
-  }
+	}
 
-  return nil
+	return nil
 }
 
 func (gh *GithubHelper) AddLabelToIssue(repo string, issueID int, label string) error {
@@ -159,8 +155,8 @@ func (gh *GithubHelper) AddLabelToIssue(repo string, issueID int, label string) 
 
 	state := issue.GetState()
 	fmt.Printf("state is %s\n", state)
-	allLabels := make([]string,len( issue.Labels), len(issue.Labels))
-	for _,l := range issue.Labels {
+	allLabels := make([]string, len(issue.Labels), len(issue.Labels))
+	for _, l := range issue.Labels {
 		allLabels = append(allLabels, strings.ToLower(*l.Name))
 	}
 
@@ -169,7 +165,7 @@ func (gh *GithubHelper) AddLabelToIssue(repo string, issueID int, label string) 
 		gh.addLabelToIssue(repo, issueID, label)
 	}
 
-  return nil
+	return nil
 }
 
 func (gh *GithubHelper) AddUserToIssue(repo string, issueID int, user string) error {
@@ -177,9 +173,3 @@ func (gh *GithubHelper) AddUserToIssue(repo string, issueID int, user string) er
 	gh.client.Issues.AddAssignees(gh.ctx, gh.owner, repo, issueID, []string{user})
 	return nil
 }
-
-
-
-
-
-

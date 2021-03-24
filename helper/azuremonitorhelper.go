@@ -14,7 +14,7 @@ import (
 type TimeSeries struct {
 	Metadatavalues []interface{} `json:"metadatavalues"`
 	Data           []struct {
-		TimeStamp time.Time `json:"timeStamp"`   // we will get one of these per minute.
+		TimeStamp time.Time `json:"timeStamp"` // we will get one of these per minute.
 		Average   float64   `json:"average"`
 	} `json:"data"`
 }
@@ -26,35 +26,35 @@ type ResourceMetric struct {
 		Value          string `json:"value"`
 		LocalizedValue string `json:"localizedValue"`
 	} `json:"name"`
-	Unit       string `json:"unit"`
-	Timeseries []TimeSeries`json:"timeseries"`
+	Unit       string       `json:"unit"`
+	Timeseries []TimeSeries `json:"timeseries"`
 }
 
 type MetricResponse struct {
-	Cost     int       `json:"cost"`
-	Timespan string `json:"timespan"`
-	Interval string    `json:"interval"`
-	Value    []ResourceMetric `json:"value"`
-	Namespace      string `json:"namespace"`
-	Resourceregion string `json:"resourceregion"`
+	Cost           int              `json:"cost"`
+	Timespan       string           `json:"timespan"`
+	Interval       string           `json:"interval"`
+	Value          []ResourceMetric `json:"value"`
+	Namespace      string           `json:"namespace"`
+	Resourceregion string           `json:"resourceregion"`
 }
 
 // used to get metrics via AzureMonitor (as opposed to app insights)
 type AzureMonitorHelper struct {
-  config AzureMonitoringConfigMap
+	config AzureMonitoringConfigMap
 
-  azureAuthMap map[string]*AzureAuth
-  //azureAuth *AzureAuth
+	azureAuthMap map[string]*AzureAuth
+	//azureAuth *AzureAuth
 }
 
 // NewAzureMonitorHelper does the Azure specifics....
-func NewAzureMonitorHelper( config AzureMonitoringConfigMap) *AzureMonitorHelper {
+func NewAzureMonitorHelper(config AzureMonitoringConfigMap) *AzureMonitorHelper {
 	ah := AzureMonitorHelper{}
 	ah.config = config
 
 	// which env?
 	//ah.azureAuth = NewAzureAuth(config)
-	aam , err := generateAzureAuthMap(config)
+	aam, err := generateAzureAuthMap(config)
 	if err != nil {
 		fmt.Printf("KABOOM with AzureMonitorHelper!! %s\n", err.Error())
 		panic(err)
@@ -63,12 +63,12 @@ func NewAzureMonitorHelper( config AzureMonitoringConfigMap) *AzureMonitorHelper
 	return &ah
 }
 
-func generateAzureAuthMap(config AzureMonitoringConfigMap ) (map[string]*AzureAuth, error) {
+func generateAzureAuthMap(config AzureMonitoringConfigMap) (map[string]*AzureAuth, error) {
 
 	aam := make(map[string]*AzureAuth)
-	for k,v := range config.AzureMonitorMap {
-    auth := NewAzureAuth(v.TenantID, v.ClientID, v.ClientSecret)
-    aam[k] = auth
+	for k, v := range config.AzureMonitorMap {
+		auth := NewAzureAuth(v.TenantID, v.ClientID, v.ClientSecret)
+		aam[k] = auth
 	}
 
 	return aam, nil
@@ -86,7 +86,7 @@ func (ah *AzureMonitorHelper) refreshToken(env string) error {
 	return err
 }
 
-func (ah *AzureMonitorHelper) GetMetrics(env string, subscriptionID string, resourceGroup string, metricDefinition string, resourceName string, startTime time.Time, endTime time.Time, metricNamesSlice[]string) ( *MetricResponse, error) {
+func (ah *AzureMonitorHelper) GetMetrics(env string, subscriptionID string, resourceGroup string, metricDefinition string, resourceName string, startTime time.Time, endTime time.Time, metricNamesSlice []string) (*MetricResponse, error) {
 
 	err := ah.refreshToken(env)
 	if err != nil {
@@ -107,33 +107,33 @@ func (ah *AzureMonitorHelper) GetMetrics(env string, subscriptionID string, reso
 	request.Header.Set("Authorization", "Bearer "+ah.currentToken(env).AccessToken)
 	resp, err := client.Do(request)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 
 	s := string(body)
 	fmt.Printf("body is %s\n", s)
 
 	mr := MetricResponse{}
-	err = json.Unmarshal( body, &mr)
+	err = json.Unmarshal(body, &mr)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 	return &mr, nil
 }
 
 // takes a time series and generates average over time period.
 //
-func generateAverageForTimeSpan( resourceName string, metricName string,  unit string, timeSeries []TimeSeries ) (string, error) {
+func generateAverageForTimeSpan(resourceName string, metricName string, unit string, timeSeries []TimeSeries) (string, error) {
 
 	total := 0.0
 	count := 0
-	for _,ts := range timeSeries {
-		for _,d := range ts.Data {
+	for _, ts := range timeSeries {
+		for _, d := range ts.Data {
 			total += d.Average
 			count++
 		}
@@ -142,36 +142,34 @@ func generateAverageForTimeSpan( resourceName string, metricName string,  unit s
 	average := total / float64(count)
 
 	if unit == "Percent" {
-		return fmt.Sprintf("%s has average %s is %0.2f%%",resourceName, metricName , average), nil
+		return fmt.Sprintf("%s has average %s is %0.2f%%", resourceName, metricName, average), nil
 	}
 
 	if unit == "Bytes" {
-		return fmt.Sprintf("%s has average %s is %0.0f bytes ",resourceName, metricName , average), nil
+		return fmt.Sprintf("%s has average %s is %0.0f bytes ", resourceName, metricName, average), nil
 	}
 
-  return "", nil
+	return "", nil
 }
 
-func (ah *AzureMonitorHelper) GetResourceMetrics( env string, resourceFriendlyName string, resourceGroup string, resourceName string, metricDefinition string, metrics []string, spanInMinutes int, ch chan string ) {
+func (ah *AzureMonitorHelper) GetResourceMetrics(env string, resourceFriendlyName string, resourceGroup string, resourceName string, metricDefinition string, metrics []string, spanInMinutes int, ch chan string) {
 
-  start := time.Now().UTC().Add(time.Duration(spanInMinutes) * time.Minute * -1)
-  end := time.Now().UTC()
-  resp, err := ah.GetMetrics( env, ah.config.AzureMonitorMap[env].SubscriptionID, resourceGroup, metricDefinition, resourceName, start, end, metrics)
-  if err != nil {
-  	// ignore for moment...
-  	log.Errorf("blew up when getting redis?!? %s\n", err.Error())
-  	return
-  }
+	start := time.Now().UTC().Add(time.Duration(spanInMinutes) * time.Minute * -1)
+	end := time.Now().UTC()
+	resp, err := ah.GetMetrics(env, ah.config.AzureMonitorMap[env].SubscriptionID, resourceGroup, metricDefinition, resourceName, start, end, metrics)
+	if err != nil {
+		// ignore for moment...
+		log.Errorf("blew up when getting redis?!? %s\n", err.Error())
+		return
+	}
 
-  fmt.Printf("resp is %v\n", resp)
+	fmt.Printf("resp is %v\n", resp)
 
-  for _,metric := range resp.Value {
-	  av, err := generateAverageForTimeSpan( resourceFriendlyName, metric.Name.LocalizedValue, metric.Unit, metric.Timeseries)
-	  if err == nil {
-	  	ch <- av
-	  }
-  }
+	for _, metric := range resp.Value {
+		av, err := generateAverageForTimeSpan(resourceFriendlyName, metric.Name.LocalizedValue, metric.Unit, metric.Timeseries)
+		if err == nil {
+			ch <- av
+		}
+	}
 
 }
-
-

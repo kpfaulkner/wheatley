@@ -43,7 +43,7 @@ func main() {
 						return
 					}
 					msg, _ := h.ParseMessage(text, u.Name)
-					messagehandlers.ProcessMessageResponse(msg,ev.Channel, api, grRtm)
+					messagehandlers.ProcessMessageResponse(msg, ev.Channel, api, grRtm)
 					//grRtm.SendMessage(grRtm.NewOutgoingMessage(msg, ev.Channel))
 				}(ev.Text, ev.User, rtm, handler)
 

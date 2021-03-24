@@ -5,14 +5,13 @@ import "time"
 type AzureMetricName string
 
 var ProcessorCpuPercentageMetric AzureMetricName = "performanceCounters/processorCpuPercentage"
-var MemoryAvailableBytesMetric   AzureMetricName = "performanceCounters/memoryAvailableBytes"
-
+var MemoryAvailableBytesMetric AzureMetricName = "performanceCounters/memoryAvailableBytes"
 
 type CPUProcessorAveragePercentage struct {
 	Value struct {
-		Start    time.Time `json:"start"`
-		End      time.Time `json:"end"`
-		Interval string    `json:"interval"`
+		Start        time.Time `json:"start"`
+		End          time.Time `json:"end"`
+		Interval     string    `json:"interval"`
 		TimeSegments []struct {
 			Start    time.Time `json:"start"`
 			End      time.Time `json:"end"`
@@ -28,9 +27,9 @@ type CPUProcessorAveragePercentage struct {
 
 type MemoryAvailableBytes struct {
 	Value struct {
-		Start    time.Time `json:"start"`
-		End      time.Time `json:"end"`
-		Interval string    `json:"interval"`
+		Start        time.Time `json:"start"`
+		End          time.Time `json:"end"`
+		Interval     string    `json:"interval"`
 		TimeSegments []struct {
 			Start    time.Time `json:"start"`
 			End      time.Time `json:"end"`

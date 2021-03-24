@@ -58,15 +58,15 @@ func (ah *AzureSQLHelper) refreshToken() error {
 
 func generateImportURL(subscriptionID string, rgName string, serverName string, databaseName string) string {
 	template := "https://management.azure.com/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Sql/servers/%s/databases/%s/extensions/import?api-version=2014-04-01"
-	url := fmt.Sprintf(template, subscriptionID, rgName, serverName,databaseName)
+	url := fmt.Sprintf(template, subscriptionID, rgName, serverName, databaseName)
 	return url
 }
 
-func generateImportBody(adminLogin string, adminLoginPassword string, storageKey string,storageUri string) string {
+func generateImportBody(adminLogin string, adminLoginPassword string, storageKey string, storageUri string) string {
 	/*template2 := `{administratorLogin: "%s",administratorLoginPassword: "%s",storageKey: "%s",storageKeyType: "%s",storageUri: "%s",
-								databasename:"%s", edition:"%s",tier:"Standard", skuName:"S2", location:"southcentralus", serviceObjectiveName:"%s",maxSizeBytes:"%d"}` */
+	databasename:"%s", edition:"%s",tier:"Standard", skuName:"S2", location:"southcentralus", serviceObjectiveName:"%s",maxSizeBytes:"%d"}` */
 	template := `{"properties": {"storageKeyType": "StorageAccessKey", "storageKey": "%s", "storageUri": "%s", "administratorLogin": "%s", "administratorLoginPassword": "%s", "operationMode": "Import"}}`
-	body := fmt.Sprintf(template, storageKey,storageUri,adminLogin, adminLoginPassword)
+	body := fmt.Sprintf(template, storageKey, storageUri, adminLogin, adminLoginPassword)
 	return body
 }
 
@@ -193,7 +193,7 @@ func (ah *AzureSQLHelper) CreateDB(importServerName string, databaseName string)
 
 func generateCreateDBURL(subscriptionID string, rgName string, serverName string, databaseName string) string {
 	template := "https://management.azure.com/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Sql/servers/%s/databases/%s?api-version=2017-10-01-preview"
-	url := fmt.Sprintf(template, subscriptionID, rgName, serverName,databaseName)
+	url := fmt.Sprintf(template, subscriptionID, rgName, serverName, databaseName)
 	return url
 }
 
@@ -202,7 +202,6 @@ func generateCreateDBBody(dbSku string) string {
 	body := fmt.Sprintf(template, dbSku)
 	return body
 }
-
 
 // UpdateSQLFirewall will update a named firewall rule with a new IP address.
 // https://docs.microsoft.com/en-us/rest/api/sql/firewallrules/createorupdate
@@ -273,6 +272,3 @@ func (ah *AzureSQLHelper) DoesSQLFirewallRuleExist(subscriptionID string, server
 	// if 200, then rule exists.
 	return resp.StatusCode == http.StatusOK
 }
-
-
-

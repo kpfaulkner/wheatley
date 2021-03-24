@@ -19,16 +19,16 @@ import (
 
 // ServerStatusMessageHandler stores status about server (test, stage, prod etc) status
 type AzureStatusMessageHandler struct {
-	state models.State
+	state    models.State
 	AIHelper *helper.AppInsightsHelper
 	AMHelper *helper.AzureMonitorHelper
-	config helper.AzureMonitoringConfigMap
+	config   helper.AzureMonitoringConfigMap
 }
 
 func NewAzureStatusMessageHandler() *AzureStatusMessageHandler {
 	asHandler := AzureStatusMessageHandler{}
 
-	config,err := helper.LoadAzureMonitoringConfig( "azuremonitoring.json")
+	config, err := helper.LoadAzureMonitoringConfig("azuremonitoring.json")
 	if err != nil {
 		log.Fatalf("Unable to monitoring Azure... something is broken %s\n", err.Error())
 	}
@@ -40,7 +40,7 @@ func NewAzureStatusMessageHandler() *AzureStatusMessageHandler {
 	return &asHandler
 }
 
-func (ss *AzureStatusMessageHandler) GetStat( f func(string, int, chan string), env string, minutes int, ch chan string ) {
+func (ss *AzureStatusMessageHandler) GetStat(f func(string, int, chan string), env string, minutes int, ch chan string) {
 	go func(env string, min int, ch chan string) {
 		f(env, min, ch)
 	}(env, minutes, ch)
@@ -56,14 +56,14 @@ func (ss *AzureStatusMessageHandler) checkEnv(env string, minsToCheck int) (stri
 
 	// App insights... get details for env.
 	aiEnvConfig := ss.config.AppInsightsMap[env]
-	for _,aiRes := range aiEnvConfig.Resources {
-		go ss.AIHelper.GetCPUAverage( env, aiRes.Name, minsToCheck, ch)
+	for _, aiRes := range aiEnvConfig.Resources {
+		go ss.AIHelper.GetCPUAverage(env, aiRes.Name, minsToCheck, ch)
 	}
 
 	// Azure Montitor config.
 	amEnvConfig := ss.config.AzureMonitorMap[env]
-	for _,amRes := range amEnvConfig.ResourceToMonitor {
-		go ss.AMHelper.GetResourceMetrics(env, amRes.Name,amRes.ResourceGroup,amRes.ResourceName,amRes.MetricDefinition, amRes.Metrics,minsToCheck,ch)
+	for _, amRes := range amEnvConfig.ResourceToMonitor {
+		go ss.AMHelper.GetResourceMetrics(env, amRes.Name, amRes.ResourceGroup, amRes.ResourceName, amRes.MetricDefinition, amRes.Metrics, minsToCheck, ch)
 	}
 
 	responseList := []string{}
@@ -72,10 +72,10 @@ func (ss *AzureStatusMessageHandler) checkEnv(env string, minsToCheck int) (stri
 	quit := false
 	for !quit {
 		select {
-		case msg := <-ch  :
+		case msg := <-ch:
 			responseList = append(responseList, msg)
 			break
-		case <- time.After(5* time.Second):
+		case <-time.After(5 * time.Second):
 			// quit...  quit it all. You've had your time, now bugger off :)
 			quit = true
 		}
@@ -103,7 +103,7 @@ func (ss *AzureStatusMessageHandler) ParseMessage(msg string, user string) (Mess
 			env := strings.ToLower(res[1])
 			if env == "test" || env == "prod" {
 
-				minsCheck,err := strconv.Atoi(res[2])
+				minsCheck, err := strconv.Atoi(res[2])
 				if err != nil || minsCheck < 5 || minsCheck > 60 {
 					return NewTextMessageResponse("not a valid number... please pick something between 5 and 60"), nil
 				}

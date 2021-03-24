@@ -11,11 +11,11 @@ import (
 )
 
 type AppInsightsHelper struct {
-  //configMap map[string]AppInsightConfig
-  config AzureMonitoringConfigMap
+	//configMap map[string]AppInsightConfig
+	config AzureMonitoringConfigMap
 }
 
-func NewAppInsightsHelper( config AzureMonitoringConfigMap ) *AppInsightsHelper {
+func NewAppInsightsHelper(config AzureMonitoringConfigMap) *AppInsightsHelper {
 	ah := AppInsightsHelper{}
 	ah.config = config
 	return &ah
@@ -27,7 +27,7 @@ func getPerfCounter(appID string, apiKey string, perfCounter Metrics.AzureMetric
 	ts := fmt.Sprintf("PT%dM", timeSpanInMinutes)
 	client := http.Client{}
 	template := "https://api.applicationinsights.io/v1/apps/%s/metrics/%s?timespan=%s&interval=%s&segment=cloud/roleName"
-	url := fmt.Sprintf(template, appID, perfCounter, ts,ts)
+	url := fmt.Sprintf(template, appID, perfCounter, ts, ts)
 	request, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return "", err
@@ -48,7 +48,7 @@ func getPerfCounter(appID string, apiKey string, perfCounter Metrics.AzureMetric
 }
 
 func (aih AppInsightsHelper) getAppInsightsCreds(env string, appInsightName string) (string, string, error) {
-	config, ok := aih.config.AppInsightsMap[ env]
+	config, ok := aih.config.AppInsightsMap[env]
 	if ok {
 
 		// manual loop through, ugly but is short.
@@ -59,21 +59,20 @@ func (aih AppInsightsHelper) getAppInsightsCreds(env string, appInsightName stri
 		}
 	}
 
-	return "","",errors.New("Unable to find config for env")
+	return "", "", errors.New("Unable to find config for env")
 }
 
 // GetCPUAverage gets the average CPU usage over a given time period.
 // Will try and make this more generic it expands.
 // Return the data via a channel
-func (aih AppInsightsHelper) GetCPUAverage( env string, appInsightsName string, spanInMinutes int, ch chan string ) {
+func (aih AppInsightsHelper) GetCPUAverage(env string, appInsightsName string, spanInMinutes int, ch chan string) {
 
 	appID, apiKey, err := aih.getAppInsightsCreds(env, appInsightsName)
 	if err != nil {
 		return // nothing we can do. Maybe log it?
 	}
 
-
-	res, err := getPerfCounter( appID, apiKey, Metrics.ProcessorCpuPercentageMetric, spanInMinutes)
+	res, err := getPerfCounter(appID, apiKey, Metrics.ProcessorCpuPercentageMetric, spanInMinutes)
 	if err != nil {
 		ch <- ""
 	}
@@ -90,14 +89,14 @@ func (aih AppInsightsHelper) GetCPUAverage( env string, appInsightsName string, 
 }
 
 // GetMemoryAverage gets the average memory available over given span.
-func (aih AppInsightsHelper) GetMemoryAverage( env string,appInsightsName string, spanInMinutes int, ch chan string  ) {
+func (aih AppInsightsHelper) GetMemoryAverage(env string, appInsightsName string, spanInMinutes int, ch chan string) {
 
 	appID, apiKey, err := aih.getAppInsightsCreds(env, appInsightsName)
 	if err != nil {
 		return // nothing we can do. Maybe log it?
 	}
 
-	res, err := getPerfCounter( appID, apiKey, Metrics.MemoryAvailableBytesMetric, spanInMinutes)
+	res, err := getPerfCounter(appID, apiKey, Metrics.MemoryAvailableBytesMetric, spanInMinutes)
 	if err != nil {
 		ch <- ""
 	}
@@ -109,8 +108,7 @@ func (aih AppInsightsHelper) GetMemoryAverage( env string,appInsightsName string
 	// second segment is via role!
 	// Only care about first segment for now...
 	for _, seg := range perfStats.Value.TimeSegments[0].Segments {
-		mem := int(seg.MemoryAvailable.Avg / (1024*1024))
+		mem := int(seg.MemoryAvailable.Avg / (1024 * 1024))
 		ch <- fmt.Sprintf("Average Memory available for role %s over %d minutes is %dMB", seg.CloudRoleName, spanInMinutes, mem)
 	}
 }
-

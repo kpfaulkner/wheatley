@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/kpfaulkner/wheatley/helper"
 	"regexp"
-
 )
 
 // SendgridMessageHandler checks for SG messages.

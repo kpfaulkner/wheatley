@@ -13,23 +13,23 @@ import (
 )
 
 type SlackServer struct {
-	slackApi *slack.Client
-	token string
+	slackApi          *slack.Client
+	token             string
 	verificationToken string
-	handlers [] messagehandlers.MessageHandler
+	handlers          []messagehandlers.MessageHandler
 }
 
 func NewSlackServer(token string, verificationToken string) SlackServer {
-  ss := SlackServer{}
-  ss.token = token
-  ss.verificationToken = verificationToken
-  ss.slackApi = slack.New(token)
+	ss := SlackServer{}
+	ss.token = token
+	ss.verificationToken = verificationToken
+	ss.slackApi = slack.New(token)
 	ss.handlers = azureFunctionGetMessageHandlers()
 
-  return ss
+	return ss
 }
 
-func (s *SlackServer) slackHttp( w http.ResponseWriter, r *http.Request) {
+func (s *SlackServer) slackHttp(w http.ResponseWriter, r *http.Request) {
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(r.Body)
 	body := buf.String()
@@ -47,7 +47,7 @@ func (s *SlackServer) slackHttp( w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 		}
-	 	w.Header().Set("Content-Type", "text")
+		w.Header().Set("Content-Type", "text")
 		w.Write([]byte(r.Challenge))
 	}
 
@@ -71,22 +71,21 @@ func (s *SlackServer) slackHttp( w http.ResponseWriter, r *http.Request) {
 
 				// not a GO channel... but just using slack-go terminology
 				go func(text string, user string, channelID string, h messagehandlers.MessageHandler) {
-					u , err := s.slackApi.GetUserInfo(user)
+					u, err := s.slackApi.GetUserInfo(user)
 					if err != nil {
 						// error.....  die a mysterious death..
 						return
 					}
 					msg, _ := h.ParseMessage(text, u.Name)
-					s.slackApi.PostMessage(channelID, slack.MsgOptionText( msg, false))
+					s.slackApi.PostMessage(channelID, slack.MsgOptionText(msg, false))
 				}(ev.Text, ev.User, ev.Channel, handler)
 			}
 		}
 	}
 }
 
-
 func (s *SlackServer) routes() {
-  http.HandleFunc("/events-endpoint", s.slackHttp)
+	http.HandleFunc("/events-endpoint", s.slackHttp)
 }
 
 func (s *SlackServer) run() {
@@ -95,7 +94,7 @@ func (s *SlackServer) run() {
 		port = "3000"
 	}
 	fmt.Printf("port used is %s\n", port)
-	log.Fatal(http.ListenAndServe(":"+port,nil))
+	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
 
 func azureFunctionGetMessageHandlers() []messagehandlers.MessageHandler {

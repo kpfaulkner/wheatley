@@ -21,19 +21,19 @@ func NewServerStatusMessageHandler() *ServerStatusMessageHandler {
 	return &ssHandler
 }
 
-func generateEnvStateMessageString( timeStamp string, reporter string, name string, state string) string {
-	response := fmt.Sprintf("At %s, %s claimed that %s was %s",  timeStamp,reporter, name, state)
+func generateEnvStateMessageString(timeStamp string, reporter string, name string, state string) string {
+	response := fmt.Sprintf("At %s, %s claimed that %s was %s", timeStamp, reporter, name, state)
 	return response
 }
 
-func (ss *ServerStatusMessageHandler) doesEnvExist( env string ) bool {
+func (ss *ServerStatusMessageHandler) doesEnvExist(env string) bool {
 	envs, err := ss.state.ListEnvs()
 	if err != nil {
-	  return false
+		return false
 	}
 
 	lowerEnv := strings.ToLower(env)
-	for _,e := range envs {
+	for _, e := range envs {
 		if e == lowerEnv {
 			return true
 		}
@@ -62,7 +62,7 @@ func (ss *ServerStatusMessageHandler) ParseMessage(msg string, user string) (Mes
 				ss.state.UpdateState(lowerEnv, user, res[2])
 				return NewTextMessageResponse("if you say so"), nil
 			} else {
-				return NewTextMessageResponse("don't know about the env.... "+ lowerEnv), nil
+				return NewTextMessageResponse("don't know about the env.... " + lowerEnv), nil
 			}
 		}
 
@@ -75,14 +75,14 @@ func (ss *ServerStatusMessageHandler) ParseMessage(msg string, user string) (Mes
 			}
 
 			combinedStatus := []string{}
-			for _,envName := range envs {
+			for _, envName := range envs {
 				env, err := ss.state.FindEnv(envName)
 				if err != nil {
 					// unable to find state.....  just tell the user cant do it.
-					combinedStatus = append(combinedStatus, "Unable to find state for " + envName)
+					combinedStatus = append(combinedStatus, "Unable to find state for "+envName)
 				}
-				stateForEnv := generateEnvStateMessageString( env.Timestamp,env.Reporter, env.Name, env.State)
-				combinedStatus = append( combinedStatus, stateForEnv)
+				stateForEnv := generateEnvStateMessageString(env.Timestamp, env.Reporter, env.Name, env.State)
+				combinedStatus = append(combinedStatus, stateForEnv)
 			}
 
 			return NewTextMessageResponse(strings.Join(combinedStatus, "\n")), nil
@@ -100,23 +100,23 @@ func (ss *ServerStatusMessageHandler) ParseMessage(msg string, user string) (Mes
 
 	case helpRegex.MatchString(msg):
 		help := []string{"list environments:  list env",
-			               "set env status:       env <env name> is <whatever you want>",
-			               "get env status:       env <env name>",
-			               "all env summary:    env summary"}
+			"set env status:       env <env name> is <whatever you want>",
+			"get env status:       env <env name>",
+			"all env summary:    env summary"}
 
 		return NewTextMessageResponse(strings.Join(help, "\n")), nil
 
 	case envStatusRegex.MatchString(msg):
 		res := envStatusRegex.FindStringSubmatch(msg)
 		if res != nil {
-      lowerEnv := strings.ToLower(res[1])
+			lowerEnv := strings.ToLower(res[1])
 			env, err := ss.state.FindEnv(lowerEnv)
 			if err != nil {
 				// unable to find state.....  just tell the user cant do it.
 				return NewTextMessageResponse("unable to find env....  "), nil
 			}
 
-			response := generateEnvStateMessageString( env.Timestamp,env.Reporter, env.Name, env.State)
+			response := generateEnvStateMessageString(env.Timestamp, env.Reporter, env.Name, env.State)
 			return NewTextMessageResponse(response), nil
 		}
 
@@ -125,12 +125,11 @@ func (ss *ServerStatusMessageHandler) ParseMessage(msg string, user string) (Mes
 		if res != nil {
 			// actually goes off and performs a check itself.
 			/*
-			err := sg.Handler.DeleteBlock(res[2])
-			if err != nil {
-				return "unable to deblock", nil
-			}
+				err := sg.Handler.DeleteBlock(res[2])
+				if err != nil {
+					return "unable to deblock", nil
+				}
 			*/
-
 
 			return NewTextMessageResponse("deblocked"), nil
 		}

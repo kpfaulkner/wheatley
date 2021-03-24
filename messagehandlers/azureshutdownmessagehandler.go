@@ -21,7 +21,7 @@ type AzureShutdownConfig struct {
 
 // AzureCostMessageHandler gets the costs from Azure Billing API.
 type AzureShutdownMessageHandler struct {
-	config *AzureShutdownConfig
+	config       *AzureShutdownConfig
 	azureClassic *pkg.AzureClassic
 }
 
@@ -34,7 +34,7 @@ func NewAzureShutdownMessageHandler() *AzureShutdownMessageHandler {
 	}
 
 	asHandler.config = config
-  asHandler.azureClassic = pkg.NewAzureClassic(asHandler.config.TenantID, asHandler.config.SubscriptionID, asHandler.config.ClientID, asHandler.config.ClientSecret)
+	asHandler.azureClassic = pkg.NewAzureClassic(asHandler.config.TenantID, asHandler.config.SubscriptionID, asHandler.config.ClientID, asHandler.config.ClientSecret)
 	return &asHandler
 }
 

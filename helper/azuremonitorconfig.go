@@ -23,17 +23,17 @@ type AzureMonitorResource struct {
 }
 
 type AzureMonitor struct {
-	Name              string `json:"Name"`
-	SubscriptionID    string `json:"SubscriptionID"`
-	TenantID          string `json:"TenantID"`
-	ClientID          string `json:"ClientID"`
-	ClientSecret      string `json:"ClientSecret"`
+	Name              string                 `json:"Name"`
+	SubscriptionID    string                 `json:"SubscriptionID"`
+	TenantID          string                 `json:"TenantID"`
+	ClientID          string                 `json:"ClientID"`
+	ClientSecret      string                 `json:"ClientSecret"`
 	ResourceToMonitor []AzureMonitorResource `json:"ResourceToMonitor"`
 }
 
 type AzureMonitoringConfig struct {
 	AzureMonitor []AzureMonitor `json:"AzureMonitor"`
-	AppInsights struct {
+	AppInsights  struct {
 		Configs []AppInsightsConfig `json:"Configs"`
 	} `json:"AppInsights"`
 }
@@ -42,10 +42,9 @@ type AzureMonitoringConfigMap struct {
 	AzureMonitoringConfig
 
 	// maps for app insights and azure monitor.... just for quick and easy lookup!
-	AppInsightsMap map[string]AppInsightsConfig
+	AppInsightsMap  map[string]AppInsightsConfig
 	AzureMonitorMap map[string]AzureMonitor
 }
-
 
 func LoadAzureMonitoringConfig(configFileName string) (*AzureMonitoringConfigMap, error) {
 	var config AzureMonitoringConfig
@@ -65,13 +64,13 @@ func LoadAzureMonitoringConfig(configFileName string) (*AzureMonitoringConfigMap
 
 	// azure monitor!
 	amcm.AzureMonitoringConfig = config
-	for _,r := range config.AzureMonitor {
-			amcm.AzureMonitorMap[r.Name] = r
+	for _, r := range config.AzureMonitor {
+		amcm.AzureMonitorMap[r.Name] = r
 	}
 
 	// app insights!!
-	for _,r := range config.AppInsights.Configs {
-		amcm.AppInsightsMap[ r.Env] = r
+	for _, r := range config.AppInsights.Configs {
+		amcm.AppInsightsMap[r.Env] = r
 	}
 
 	return &amcm, nil
